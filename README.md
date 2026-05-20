@@ -1,8 +1,8 @@
-# QR System 🔍
+# QR System 
 
 Sistema de registro y control de objetos con códigos QR. Desarrollado con Flutter (móvil) y FastAPI + PostgreSQL (backend).
 
-## 📋 Requisitos
+##  Requisitos
 
 - Python 3.10+
 - Flutter 3.x
@@ -53,7 +53,7 @@ CREATE TABLE escaneos (
 );
 ```
 
-## ⚙️ Backend (FastAPI)
+##  Backend (FastAPI)
 
 1. Entra a la carpeta backend:
 
@@ -102,7 +102,7 @@ py -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 Backend disponible en `http://localhost:8000`
 Documentación en `http://localhost:8000/docs`
 
-## 📱 Flutter
+##  Flutter
 
 1. Entra a la carpeta flutter_app:
 
@@ -130,20 +130,20 @@ static const String baseUrl = 'http://TU_IP:8000';
 flutter run
 ```
 
-## 👤 Roles
+##  Roles
 
 | Rol | Acceso |
 |-----|--------|
 | `usuario` | Registrar objetos, ver QRs, ver historial propio |
 | `admin` | Ver todos los escaneos, filtrar por fecha y alumno |
 
-## 🔑 Crear usuario admin
+##  Crear usuario admin
 
 ```sql
 UPDATE cuentas SET rol = 'admin' WHERE correo = 'tu_correo@ejemplo.com';
 ```
 
-## 📡 Endpoints
+##  Endpoints
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
