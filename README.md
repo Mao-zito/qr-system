@@ -77,12 +77,19 @@ pip install -r requirements.txt
 4. Crea el archivo `.env` dentro de `backend/`:
 
 ```
-DATABASE_URL=postgresql://postgres:TU_PASSWORD@localhost/qr_system
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=qr_system
+DB_USER=postgres
+DB_PASSWORD=TU_PASSWORD
+
 SECRET_KEY=tu_clave_secreta_aqui
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
+
 API_HOST=0.0.0.0
 API_PORT=8000
+
 FRONTEND_URL=http://localhost:3000
 ```
 
