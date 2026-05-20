@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: qr_system
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Kirito2018
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     volumes:
@@ -41,7 +41,7 @@ services:
     environment:
       DB_HOST: postgres
       DB_USER: postgres
-      DB_PASSWORD: Kirito2018
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DB_NAME: qr_system
     depends_on:
       postgres:
@@ -49,16 +49,6 @@ services:
     volumes:
       - ./backend:/app
     command: python main.py
-
-  frontend:
-    image: node:18-alpine
-    container_name: qr_system_frontend
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-    working_dir: /app
-    command: npx http-server -p 3000
 
 volumes:
   postgres_data:
