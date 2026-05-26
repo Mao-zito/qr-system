@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/api_service.dart';
+import 'admin_detalle_escaneo_screen.dart';
 import 'login_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
@@ -30,7 +31,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   void initState() {
     super.initState();
     _apiService.setToken(widget.token);
-     print('👮 TOKEN EN ADMIN: ${widget.token}');
     _cargarEscaneos();
   }
 
@@ -155,7 +155,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header con stats
             Container(
               color: Colors.deepPurple,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -167,8 +166,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 ],
               ),
             ),
-
-            // Filtros
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -220,8 +217,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 ],
               ),
             ),
-
-            // Lista de escaneos
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -273,6 +268,17 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                                     ],
                                   ),
                                   isThreeLine: true,
+                                  trailing: const Icon(Icons.arrow_forward_ios,
+                                      size: 14, color: Colors.grey),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            AdminDetalleEscaneoScreen(escaneo: e),
+                                      ),
+                                    );
+                                  },
                                 ),
                               );
                             },
@@ -316,27 +322,27 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   int _escaneosHoy() {
-  final hoy = DateTime.now();
-  return _escaneos.where((e) {
-    try {
-      final fechaStr = e['fecha_hora']?.toString() ?? '';
-      if (fechaStr.isEmpty) return false;
-      final fecha = DateTime.parse(fechaStr);
-      return fecha.year == hoy.year &&
-             fecha.month == hoy.month &&
-             fecha.day == hoy.day;
-    } catch (_) {
-      return false;
-    }
-  }).length;
-}
-
-   String _formatearFecha(String fecha) {
-  try {
-    final dt = DateTime.parse(fecha);
-    return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-  } catch (_) {
-    return fecha;
+    final hoy = DateTime.now();
+    return _escaneos.where((e) {
+      try {
+        final fechaStr = e['fecha_hora']?.toString() ?? '';
+        if (fechaStr.isEmpty) return false;
+        final fecha = DateTime.parse(fechaStr);
+        return fecha.year == hoy.year &&
+            fecha.month == hoy.month &&
+            fecha.day == hoy.day;
+      } catch (_) {
+        return false;
+      }
+    }).length;
   }
- }
+
+  String _formatearFecha(String fecha) {
+    try {
+      final dt = DateTime.parse(fecha);
+      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return fecha;
+    }
+  }
 }
