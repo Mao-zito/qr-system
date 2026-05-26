@@ -51,6 +51,13 @@ CREATE TABLE escaneos (
     dispositivo VARCHAR(50),
     fecha_hora TIMESTAMP DEFAULT NOW()
 );
+
+INSERT INTO categorias (nombre) VALUES 
+('Electronico'),
+('Movilidad'),
+('Deportivo'),
+('Accesorio');
+
 ```
 
 ##  Backend (FastAPI)
