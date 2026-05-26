@@ -4,8 +4,8 @@ Sistema de registro y control de objetos con códigos QR. Desarrollado con Flutt
 
 ##  Requisitos
 
-- Python 3.10+
-- Flutter 3.x
+- Python 3.13.0
+- Flutter 3.32.5
 - PostgreSQL 14+
 
 ## 🗄️ Base de Datos
@@ -51,6 +51,13 @@ CREATE TABLE escaneos (
     dispositivo VARCHAR(50),
     fecha_hora TIMESTAMP DEFAULT NOW()
 );
+
+INSERT INTO categorias (nombre) VALUES 
+('Electronico'),
+('Movilidad'),
+('Deportivo'),
+('Accesorio');
+
 ```
 
 ##  Backend (FastAPI)
