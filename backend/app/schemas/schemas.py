@@ -18,9 +18,12 @@ class LoginResponse(BaseModel):
 # ============ USUARIOS ============
 class UsuarioCreate(BaseModel):
     nombre: str = Field(..., min_length=2)
+    apellido: str = Field(..., min_length=2)
     correo: EmailStr
     contrasena: str = Field(..., min_length=6)
-    rol: str = Field(default="user")
+    telefono: str = Field(..., min_length=7)
+    codigo_estudiante: str = Field(..., min_length=3)
+    rol: str = Field(default="usuario")
 
 class UsuarioResponse(BaseModel):
     id: int

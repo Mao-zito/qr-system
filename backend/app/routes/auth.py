@@ -45,7 +45,10 @@ def registro(usuario_data: UsuarioCreate):
     try:
         usuario = UsuarioModel.crear_usuario(
             nombre=usuario_data.nombre,
+            apellido=usuario_data.apellido,
             correo=usuario_data.correo,
+            telefono=usuario_data.telefono,
+            codigo_estudiante=usuario_data.codigo_estudiante,
             contrasena=usuario_data.contrasena,
             rol=usuario_data.rol
         )

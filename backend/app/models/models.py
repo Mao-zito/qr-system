@@ -5,19 +5,19 @@ from datetime import datetime
 
 class UsuarioModel:
     @staticmethod
-    def crear_usuario(nombre: str, correo: str, contrasena: str, rol: str = "user"):
+    def crear_usuario(nombre: str, apellido: str, correo: str, contrasena: str, telefono: str, codigo_estudiante: str, rol: str = "usuario"):
         cursor = get_cursor_simple()
         conn = Database.get_connection()
         hash_pwd = PasswordHash.hash_password(contrasena)
         try:
             cursor.execute("""
-                INSERT INTO cuentas(nombre, correo, contrasena, rol)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO cuentas(nombre, apellido, correo, contrasena, telefono, codigo_estudiante, rol)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
-            """, (nombre, correo, hash_pwd, rol))
+            """, (nombre, apellido, correo, hash_pwd, telefono, codigo_estudiante, rol))
             usuario_id = cursor.fetchone()[0]
             conn.commit()
-            return {"id": usuario_id, "nombre": nombre, "correo": correo, "rol": rol}
+            return {"id": usuario_id, "nombre": nombre, "apellido": apellido, "correo": correo, "rol": rol}
         except Exception as e:
             conn.rollback()
             raise e
