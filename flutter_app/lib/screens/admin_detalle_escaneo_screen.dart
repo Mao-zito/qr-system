@@ -9,6 +9,7 @@ class AdminDetalleEscaneoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fecha = _formatearFecha(escaneo['fecha_hora']?.toString() ?? '');
+    final nombreCompleto = '${escaneo['alumno'] ?? ''} ${escaneo['apellido'] ?? ''}'.trim();
 
     return Scaffold(
       appBar: AppBar(
@@ -30,9 +31,7 @@ class AdminDetalleEscaneoScreen extends StatelessWidget {
               child: Column(
                 children: [
                   const Text('CÓDIGO QR',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple)),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple)),
                   const SizedBox(height: 12),
                   QrImageView(
                     data: escaneo['qr_code'] ?? 'sin-qr',
@@ -41,22 +40,27 @@ class AdminDetalleEscaneoScreen extends StatelessWidget {
                     backgroundColor: Colors.white,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    escaneo['qr_code'] ?? '',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
+                  Text(escaneo['qr_code'] ?? '',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
-            // Info
-            _buildInfoCard([
-              _buildInfoRow(Icons.backpack, 'Objeto', escaneo['objeto'] ?? 'Sin nombre'),
-              _buildInfoRow(Icons.person, 'Alumno', escaneo['alumno'] ?? 'Desconocido'),
+            // Info del objeto
+            _buildInfoCard('Objeto', [
+              _buildInfoRow(Icons.backpack, 'Nombre', escaneo['objeto'] ?? 'Sin nombre'),
               _buildInfoRow(Icons.location_on, 'Ubicación', escaneo['ubicacion'] ?? 'Sin ubicación'),
               _buildInfoRow(Icons.devices, 'Dispositivo', escaneo['dispositivo'] ?? 'Desconocido'),
               _buildInfoRow(Icons.access_time, 'Fecha y hora', fecha),
+            ]),
+            const SizedBox(height: 16),
+
+            // Info del alumno
+            _buildInfoCard('Alumno', [
+              _buildInfoRow(Icons.person, 'Nombre completo', nombreCompleto.isEmpty ? 'Desconocido' : nombreCompleto),
+              _buildInfoRow(Icons.badge, 'Código estudiante', escaneo['codigo_estudiante'] ?? 'Sin código'),
+              _buildInfoRow(Icons.phone, 'Teléfono', escaneo['telefono'] ?? 'Sin teléfono'),
             ]),
           ],
         ),
@@ -64,20 +68,29 @@ class AdminDetalleEscaneoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(List<Widget> children) {
+  Widget _buildInfoCard(String titulo, List<Widget> children) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(children: children),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(titulo.toUpperCase(),
+                style: const TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
+            const Divider(),
+            ...children,
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Icon(icon, color: Colors.deepPurple, size: 20),
@@ -85,11 +98,8 @@ class AdminDetalleEscaneoScreen extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label,
-                  style: const TextStyle(fontSize: 11, color: Colors.grey)),
-              Text(value,
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w500)),
+              Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
             ],
           ),
         ],
@@ -101,8 +111,6 @@ class AdminDetalleEscaneoScreen extends StatelessWidget {
     try {
       final dt = DateTime.parse(fecha);
       return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return fecha;
-    }
+    } catch (_) { return fecha; }
   }
 }

@@ -91,3 +91,24 @@ class EstadisticasResponse(BaseModel):
     escaneos_por_dispositivo: dict
     escaneos_ultimo_dia: int
     escaneos_ultima_semana: int
+
+# ============ PERFIL ============
+class PerfilResponse(BaseModel):
+    id: int
+    nombre: str
+    apellido: Optional[str]
+    correo: str
+    telefono: Optional[str]
+    codigo_estudiante: Optional[str]
+    rol: str
+    foto_perfil: Optional[str]
+
+class PerfilUpdate(BaseModel):
+    nombre: Optional[str] = None
+    apellido: Optional[str] = None
+    telefono: Optional[str] = None
+    foto_perfil: Optional[str] = None
+
+class CambiarContrasena(BaseModel):
+    contrasena_actual: str
+    contrasena_nueva: str = Field(..., min_length=6)

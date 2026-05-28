@@ -8,39 +8,50 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-
-  screenshot: ^3.0.0
-  share_plus: ^7.2.1
   flutter:
     sdk: flutter
-  qr_flutter: ^4.1.0
 
-  # HTTP y networking
+  # UI / utilidades
+  qr_flutter: ^4.1.0
+  screenshot: ^3.0.0
+  share_plus: ^7.2.1
+  intl: ^0.19.0
+
+  # HTTP
   http: ^1.1.0
-  
+
   # State management
   provider: ^6.0.0
-  
+
   # Local storage
   shared_preferences: ^2.2.0
-  
-  # QR Code scanning
+
+  # QR Scanner
   mobile_scanner: ^4.0.0
-  
-  # Date/time
-  intl: ^0.19.0
-  
-  # JSON serialization
+
+  # Imagen (GALERÍA / CÁMARA)
+  image_picker: ^1.0.4
+
+  # Archivos / rutas
+  path_provider: ^2.1.1
+
+  # JSON
   json_serializable: ^6.7.0
-  build_runner: ^2.4.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^3.0.0
+  build_runner: ^2.4.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
 
-path_provider: ^2.1.1
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icono.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/icono.png"

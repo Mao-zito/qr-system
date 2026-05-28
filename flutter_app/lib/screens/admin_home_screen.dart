@@ -4,16 +4,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import 'admin_detalle_escaneo_screen.dart';
 import 'login_screen.dart';
+import 'perfil_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   final String usuario;
   final String token;
 
-  const AdminHomeScreen({
-    Key? key,
-    required this.usuario,
-    required this.token,
-  }) : super(key: key);
+  const AdminHomeScreen({Key? key, required this.usuario, required this.token}) : super(key: key);
 
   @override
   State<AdminHomeScreen> createState() => _AdminHomeScreenState();
@@ -50,10 +47,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           _escaneosFiltrados = _escaneos;
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result['error'] ?? 'Error al cargar escaneos'),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text(result['error'] ?? 'Error al cargar escaneos'), backgroundColor: Colors.red),
           );
         }
         _isLoading = false;
@@ -67,12 +61,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       _escaneosFiltrados = _escaneos.where((e) {
         final objeto = (e['objeto'] ?? '').toLowerCase();
         final alumno = (e['alumno'] ?? '').toLowerCase();
+        final apellido = (e['apellido'] ?? '').toLowerCase();
+        final codigo = (e['codigo_estudiante'] ?? '').toLowerCase();
         final ubicacion = (e['ubicacion'] ?? '').toLowerCase();
         final fecha = e['fecha_hora']?.toString() ?? '';
 
         final coincideTexto = query.isEmpty ||
             objeto.contains(query) ||
             alumno.contains(query) ||
+            apellido.contains(query) ||
+            codigo.contains(query) ||
             ubicacion.contains(query);
 
         final coincideFecha = _fechaFiltro == null ||
@@ -133,23 +131,43 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Center(
-              child: Text(
-                widget.usuario,
-                style: const TextStyle(color: Colors.white, fontSize: 13),
-              ),
+              child: Text(widget.usuario, style: const TextStyle(color: Colors.white, fontSize: 13)),
             ),
           ),
           PopupMenuButton(
-            onSelected: (value) {
-              if (value == 'logout') _logout();
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'logout',
-                child: Text('Cerrar Sesión'),
-              ),
-            ],
-          ),
+  onSelected: (value) {
+    if (value == 'logout') {
+      _logout();
+    } else if (value == 'perfil') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const PerfilScreen()),
+      );
+    }
+  },
+  itemBuilder: (context) => [
+    const PopupMenuItem(
+      value: 'perfil',
+      child: Row(
+        children: [
+          Icon(Icons.person_outline),
+          SizedBox(width: 8),
+          Text('Mi Perfil'),
+        ],
+      ),
+    ),
+    const PopupMenuItem(
+      value: 'logout',
+      child: Row(
+        children: [
+          Icon(Icons.logout),
+          SizedBox(width: 8),
+          Text('Cerrar Sesión'),
+        ],
+      ),
+    ),
+  ],
+),
         ],
       ),
       body: SafeArea(
@@ -174,11 +192,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     controller: _busquedaController,
                     onChanged: (_) => _filtrar(),
                     decoration: InputDecoration(
-                      hintText: 'Buscar por alumno, objeto, ubicación...',
+                      hintText: 'Buscar por alumno, código, objeto...',
                       prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       contentPadding: const EdgeInsets.symmetric(vertical: 8),
                     ),
                   ),
@@ -225,13 +241,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.inbox_outlined,
-                                  size: 64, color: Colors.grey.shade300),
+                              Icon(Icons.inbox_outlined, size: 64, color: Colors.grey.shade300),
                               const SizedBox(height: 12),
-                              Text(
-                                'No hay escaneos',
-                                style: TextStyle(color: Colors.grey.shade600),
-                              ),
+                              Text('No hay escaneos', style: TextStyle(color: Colors.grey.shade600)),
                             ],
                           ),
                         )
@@ -243,39 +255,34 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                             itemBuilder: (context, index) {
                               final e = _escaneosFiltrados[index];
                               final fecha = _formatearFecha(e['fecha_hora']?.toString() ?? '');
+                              final nombreCompleto = '${e['alumno'] ?? ''} ${e['apellido'] ?? ''}'.trim();
                               return Card(
                                 margin: const EdgeInsets.only(bottom: 8),
                                 child: ListTile(
                                   leading: CircleAvatar(
                                     backgroundColor: Colors.deepPurple.shade100,
-                                    child: const Icon(Icons.qr_code,
-                                        color: Colors.deepPurple, size: 20),
+                                    child: const Icon(Icons.qr_code, color: Colors.deepPurple, size: 20),
                                   ),
                                   title: Text(
                                     e['objeto'] ?? 'Sin nombre',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold, fontSize: 14),
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                   ),
                                   subtitle: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('👤 ${e['alumno'] ?? 'Desconocido'}',
-                                          style: const TextStyle(fontSize: 12)),
-                                      Text('📍 ${e['ubicacion'] ?? 'Sin ubicación'}',
-                                          style: const TextStyle(fontSize: 12)),
-                                      Text('🕐 $fecha',
-                                          style: const TextStyle(fontSize: 12)),
+                                      Text('👤 $nombreCompleto', style: const TextStyle(fontSize: 12)),
+                                      Text('🎓 ${e['codigo_estudiante'] ?? 'Sin código'}', style: const TextStyle(fontSize: 12)),
+                                      Text('📍 ${e['ubicacion'] ?? 'Sin ubicación'}', style: const TextStyle(fontSize: 12)),
+                                      Text('🕐 $fecha', style: const TextStyle(fontSize: 12)),
                                     ],
                                   ),
-                                  isThreeLine: true,
-                                  trailing: const Icon(Icons.arrow_forward_ios,
-                                      size: 14, color: Colors.grey),
+                                  isThreeLine: false,
+                                  trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
                                   onTap: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) =>
-                                            AdminDetalleEscaneoScreen(escaneo: e),
+                                        builder: (context) => AdminDetalleEscaneoScreen(escaneo: e),
                                       ),
                                     );
                                   },
@@ -306,13 +313,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                Text(valor,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold)),
+                Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(valor, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               ],
             ),
           ],
@@ -328,12 +330,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         final fechaStr = e['fecha_hora']?.toString() ?? '';
         if (fechaStr.isEmpty) return false;
         final fecha = DateTime.parse(fechaStr);
-        return fecha.year == hoy.year &&
-            fecha.month == hoy.month &&
-            fecha.day == hoy.day;
-      } catch (_) {
-        return false;
-      }
+        return fecha.year == hoy.year && fecha.month == hoy.month && fecha.day == hoy.day;
+      } catch (_) { return false; }
     }).length;
   }
 
@@ -341,8 +339,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     try {
       final dt = DateTime.parse(fecha);
       return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return fecha;
-    }
+    } catch (_) { return fecha; }
   }
 }

@@ -5,6 +5,7 @@ import '../models/objeto_model.dart';
 import '../services/api_service.dart';
 import 'historial_screen.dart';
 import 'login_screen.dart';
+import 'perfil_screen.dart';
 import 'registrar_objeto_screen.dart';
 import 'ver_qr_screen.dart';
 
@@ -60,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final prefs = await SharedPreferences.getInstance();
   await prefs.remove('token');
   await prefs.remove('nombre');
+  await prefs.remove('rol');  // 👈 agrega esto
   _apiService.logout();
   if (mounted) {
     Navigator.of(context).pushAndRemoveUntil(
@@ -120,18 +122,39 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           PopupMenuButton(
-            onSelected: (value) {
-              if (value == 'logout') {
-                _logout();
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'logout',
-                child: Text('Cerrar Sesión'),
-              ),
-            ],
-          ),
+  onSelected: (value) {
+    if (value == 'logout') {
+      _logout();
+    } else if (value == 'perfil') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const PerfilScreen()),
+      );
+    }
+  },
+  itemBuilder: (context) => [
+    const PopupMenuItem(
+      value: 'perfil',
+      child: Row(
+        children: [
+          Icon(Icons.person_outline),
+          SizedBox(width: 8),
+          Text('Mi Perfil'),
+        ],
+      ),
+    ),
+    const PopupMenuItem(
+      value: 'logout',
+      child: Row(
+        children: [
+          Icon(Icons.logout),
+          SizedBox(width: 8),
+          Text('Cerrar Sesión'),
+        ],
+      ),
+    ),
+  ],
+),
         ],
       ),
       body: SafeArea(

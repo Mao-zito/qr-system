@@ -288,4 +288,83 @@ class ApiService {
       return {'success': false, 'error': 'Error: $e'};
     }
   }
+   // ─── PERFIL ─────────────────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> obtenerPerfil() async {
+    try {
+      final url = Uri.parse('${ApiConstants.baseUrl}/auth/perfil');
+      final response = await http.get(url, headers: _getHeaders())
+          .timeout(Duration(seconds: ApiConstants.timeoutSeconds));
+      if (response.statusCode == 200) {
+        return {'success': true, 'data': jsonDecode(response.body)};
+      } else {
+        return {'success': false, 'error': 'Error al obtener perfil'};
+      }
+    } on TimeoutException {
+      return {'success': false, 'error': 'Tiempo de conexión agotado'};
+    } catch (e) {
+      return {'success': false, 'error': 'Error: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> actualizarPerfil({
+    String? nombre,
+    String? apellido,
+    String? telefono,
+    String? fotoPerfil,
+  }) async {
+    try {
+      final url = Uri.parse('${ApiConstants.baseUrl}/auth/perfil');
+      final response = await http.put(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode({
+          if (nombre != null) 'nombre': nombre,
+          if (apellido != null) 'apellido': apellido,
+          if (telefono != null) 'telefono': telefono,
+          if (fotoPerfil != null) 'foto_perfil': fotoPerfil,
+        }),
+      ).timeout(Duration(seconds: ApiConstants.timeoutSeconds));
+      if (response.statusCode == 200) {
+        return {'success': true, 'data': jsonDecode(response.body)};
+      } else {
+        final errorMsg = jsonDecode(response.body)['detail'] ?? 'Error al actualizar';
+        return {'success': false, 'error': errorMsg};
+      }
+    } on TimeoutException {
+      return {'success': false, 'error': 'Tiempo de conexión agotado'};
+    } catch (e) {
+      return {'success': false, 'error': 'Error: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> cambiarContrasena(
+    String contrasenaActual,
+    String contrasenaNueva,
+  ) async {
+    try {
+      final url = Uri.parse('${ApiConstants.baseUrl}/auth/cambiar-contrasena');
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode({
+          'contrasena_actual': contrasenaActual,
+          'contrasena_nueva': contrasenaNueva,
+        }),
+      ).timeout(Duration(seconds: ApiConstants.timeoutSeconds));
+      if (response.statusCode == 200) {
+        return {'success': true};
+      } else {
+        final errorMsg = jsonDecode(response.body)['detail'] ?? 'Error al cambiar contraseña';
+        return {'success': false, 'error': errorMsg};
+      }
+    } on TimeoutException {
+      return {'success': false, 'error': 'Tiempo de conexión agotado'};
+    } catch (e) {
+      return {'success': false, 'error': 'Error: $e'};
+    }
+  }
+
 }
+
+
