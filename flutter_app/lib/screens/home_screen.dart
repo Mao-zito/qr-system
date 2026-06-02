@@ -27,6 +27,11 @@ class _HomeScreenState extends State<HomeScreen> {
   final _apiService = ApiService();
   List<Objeto> _misObjetos = [];
   bool _isLoading = true;
+  int _selectedIndex = 0;
+  
+  static const Color _naranja = Color(0xFF5B7FFF);
+  static const Color _naranjaClaro = Color(0xFF5B7FFF);
+  static const Color _blanco = Color(0xFFFAFAFA);
 
   @override
   void initState() {
@@ -57,19 +62,40 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
- void _logout() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.remove('token');
-  await prefs.remove('nombre');
-  await prefs.remove('rol');  // 👈 agrega esto
-  _apiService.logout();
-  if (mounted) {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-      (route) => false,
-    );
+  void _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    await prefs.remove('nombre');
+    await prefs.remove('rol');
+    _apiService.logout();
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false,
+      );
+    }
   }
-}
+
+  void _onTabTapped(int index) {
+    if (index == 1) {
+      // Historial
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const HistorialScreen()),
+      );
+    } else if (index == 2) {
+      // Perfil
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const PerfilScreen()),
+      );
+    } else {
+      // Inicio
+      setState(() {
+        _selectedIndex = 0;
+      });
+    }
+  }
 
   void _irARegistroObjeto() async {
     final resultado = await Navigator.push<bool>(
@@ -92,76 +118,43 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _verHistorial() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const HistorialScreen(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _blanco,
       appBar: AppBar(
         title: const Text('QR System'),
-        backgroundColor: const Color(0xFF00897B),
-        elevation: 0,
+        backgroundColor: _naranjaClaro,
+        elevation: 1,
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Center(
-              child: Text(
-                'Hola, ${widget.usuario}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PerfilScreen()),
+                  );
+                },
+                child: Text(
+                  widget.usuario,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
           ),
-          PopupMenuButton(
-  onSelected: (value) {
-    if (value == 'logout') {
-      _logout();
-    } else if (value == 'perfil') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const PerfilScreen()),
-      );
-    }
-  },
-  itemBuilder: (context) => [
-    const PopupMenuItem(
-      value: 'perfil',
-      child: Row(
-        children: [
-          Icon(Icons.person_outline),
-          SizedBox(width: 8),
-          Text('Mi Perfil'),
-        ],
-      ),
-    ),
-    const PopupMenuItem(
-      value: 'logout',
-      child: Row(
-        children: [
-          Icon(Icons.logout),
-          SizedBox(width: 8),
-          Text('Cerrar Sesión'),
-        ],
-      ),
-    ),
-  ],
-),
         ],
       ),
       body: SafeArea(
         child: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00897B)),
+                  valueColor: AlwaysStoppedAnimation<Color>(_naranjaClaro),
                 ),
               )
             : SingleChildScrollView(
@@ -173,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Text(
                       'Panel de Control',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF333333),
                       ),
@@ -183,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       'Gestiona tus objetos y visualiza tus ingresos',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF666666),
+                        color: Color(0xFF999999),
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -196,15 +189,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: _irARegistroObjeto,
                     ),
                     const SizedBox(height: 12),
-
-                    // Botón: Historial
-                    _buildActionCard(
-                      icon: Icons.history,
-                      titulo: 'Mi Historial',
-                      descripcion: 'Ver todos mis ingresos registrados',
-                      onTap: _verHistorial,
-                    ),
-                    const SizedBox(height: 32),
 
                     // Sección: Mis Objetos
                     const Text(
@@ -249,64 +233,111 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemBuilder: (context, index) {
                           final objeto = _misObjetos[index];
                           return Card(
-                            elevation: 2,
+                            elevation: 1,
                             margin: const EdgeInsets.only(bottom: 12),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                             ),
-                            child: ListTile(
-                              leading: Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF00897B),
-                                  borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: const Color(0xFFE8E8E8),
+                                  width: 1,
                                 ),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.backpack,
-                                    color: Colors.white,
-                                    size: 20,
+                              ),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
+                                leading: Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: _naranjaClaro.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.backpack,
+                                      color: _naranjaClaro,
+                                      size: 22,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              title: Text(
-                                objeto.nombre,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                title: Text(
+                                  objeto.nombre,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
+                                    color: Color(0xFF1F1F1F),
+                                  ),
                                 ),
-                              ),
-                              subtitle: Text(
-                                objeto.descripcion ?? 'Sin descripción',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 12,
+                                subtitle: Text(
+                                  objeto.descripcion ?? 'Sin descripción',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF888888),
+                                  ),
                                 ),
-                              ),
-                              trailing: IconButton(
-                                icon: const Icon(
-                                  Icons.qr_code,
-                                  color: Color(0xFF00897B),
+                                trailing: IconButton(
+                                  icon: Icon(
+                                    Icons.qr_code_2,
+                                    color: _naranjaClaro,
+                                    size: 22,
+                                  ),
+                                  onPressed: () => _verCodigoQR(objeto),
+                                  tooltip: 'Ver código QR',
                                 ),
-                                onPressed: () => _verCodigoQR(objeto),
-                                tooltip: 'Ver código QR',
+                                onTap: () => _verCodigoQR(objeto),
                               ),
-                              onTap: () => _verCodigoQR(objeto),
                             ),
                           );
                         },
                       ),
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _irARegistroObjeto,
-        backgroundColor: const Color(0xFF00897B),
+        backgroundColor: _naranjaClaro,
         icon: const Icon(Icons.add),
         label: const Text('Nuevo Objeto'),
+        foregroundColor: Colors.white,
+        elevation: 4,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onTabTapped,
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Historial',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Perfil',
+          ),
+        ],
+        selectedItemColor: _naranjaClaro,
+        unselectedItemColor: Color(0xFFB8B8B8),
+        iconSize: 24,
+        showUnselectedLabels: true,
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
       ),
     );
   }
@@ -318,23 +349,46 @@ class _HomeScreenState extends State<HomeScreen> {
     required VoidCallback onTap,
   }) {
     return Card(
-      elevation: 2,
+      elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
+      shadowColor: _naranjaClaro.withOpacity(0.3),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                _blanco.withOpacity(0.98),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: _naranjaClaro.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
               Container(
-                width: 50,
-                height: 50,
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00897B),
-                  borderRadius: BorderRadius.circular(10),
+                  color: _naranjaClaro,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _naranjaClaro.withOpacity(0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Center(
                   child: Icon(
@@ -352,17 +406,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       titulo,
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F1F1F),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       descripcion,
                       style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF999999),
+                        fontSize: 13,
+                        color: Color(0xFF888888),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -370,10 +424,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios,
                 size: 16,
-                color: Color(0xFFCCCCCC),
+                color: _naranjaClaro.withOpacity(0.5),
               ),
             ],
           ),

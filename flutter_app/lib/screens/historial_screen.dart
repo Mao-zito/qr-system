@@ -13,6 +13,7 @@ class HistorialScreen extends StatefulWidget {
 
 class _HistorialScreenState extends State<HistorialScreen> {
   late Future<List<Escaneo>> _futureHistorial;
+  static const Color _naranjaClaro = Color(0xFF5B7FFF);
 
   @override
   void initState() {
@@ -36,9 +37,10 @@ class _HistorialScreenState extends State<HistorialScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
         title: const Text('Mi Historial de Ingresos'),
-        backgroundColor: const Color(0xFF00897B),
+        backgroundColor: _naranjaClaro,
         elevation: 0,
       ),
       body: SafeArea(
@@ -48,7 +50,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00897B)),
+                  valueColor: AlwaysStoppedAnimation<Color>(_naranjaClaro),
                 ),
               );
             }
@@ -82,7 +84,10 @@ class _HistorialScreenState extends State<HistorialScreen> {
                       icon: const Icon(Icons.refresh),
                       label: const Text('Reintentar'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00897B),
+                        backgroundColor: _naranjaClaro,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ],
@@ -131,69 +136,71 @@ class _HistorialScreenState extends State<HistorialScreen> {
                 });
                 await _futureHistorial;
               },
+              color: _naranjaClaro,
               child: ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: escaneos.length,
                 itemBuilder: (context, index) {
                   final escaneo = escaneos[index];
                   return Card(
-                    elevation: 2,
+                    elevation: 4,
                     margin: const EdgeInsets.only(bottom: 12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Objeto
-                          Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF00897B),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.backpack,
-                                    color: Colors.white,
-                                    size: 20,
+                    shadowColor: _naranjaClaro.withOpacity(0.2),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Objeto
+                            Row(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: _naranjaClaro,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.backpack,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      escaneo.objeto ?? 'Objeto',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF333333),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        escaneo.objeto ?? 'Objeto',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF333333),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      _formatearFecha(
-                                          escaneo.fechaHora ?? DateTime.now()),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF999999),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _formatearFecha(
+                                            escaneo.fechaHora ?? DateTime.now()),
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF999999),
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
                           const SizedBox(height: 12),
                           const Divider(height: 1),
                           const SizedBox(height: 12),

@@ -21,6 +21,7 @@ class VerQrScreen extends StatefulWidget {
 class _VerQrScreenState extends State<VerQrScreen> {
   final ScreenshotController _screenshotController = ScreenshotController();
   bool _compartiendo = false;
+  static const Color _naranjaClaro = Color(0xFF5B7FFF);
 
   Future<void> _compartirQr() async {
     setState(() => _compartiendo = true);
@@ -50,9 +51,10 @@ class _VerQrScreenState extends State<VerQrScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
         title: const Text('Mi Código QR'),
-        backgroundColor: const Color(0xFF00897B),
+        backgroundColor: _naranjaClaro,
         elevation: 0,
       ),
       body: SafeArea(
@@ -62,21 +64,22 @@ class _VerQrScreenState extends State<VerQrScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Card(
-                elevation: 2,
+                elevation: 4,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
+                shadowColor: _naranjaClaro.withOpacity(0.2),
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('OBJETO',
+                      Text('OBJETO',
                           style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF666666))),
-                      const SizedBox(height: 8),
+                              color: _naranjaClaro)),
+                      const SizedBox(height: 12),
                       Text(widget.objeto.nombre,
                           style: const TextStyle(
                               fontSize: 20,
@@ -85,15 +88,15 @@ class _VerQrScreenState extends State<VerQrScreen> {
                       if (widget.objeto.descripcion != null &&
                           widget.objeto.descripcion!.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text('DESCRIPCIÓN',
+                        Text('DESCRIPCIÓN',
                             style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF666666))),
-                        const SizedBox(height: 4),
+                                color: _naranjaClaro)),
+                        const SizedBox(height: 8),
                         Text(widget.objeto.descripcion!,
                             style: const TextStyle(
-                                fontSize: 14, color: Color(0xFF555555))),
+                                fontSize: 14, color: Color(0xFF666666))),
                       ],
                     ],
                   ),
@@ -133,29 +136,33 @@ class _VerQrScreenState extends State<VerQrScreen> {
               const SizedBox(height: 32),
 
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F4F4),
-                  borderRadius: BorderRadius.circular(8),
+                  color: _naranjaClaro.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: _naranjaClaro.withOpacity(0.2),
+                    width: 1,
+                  ),
                 ),
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('CÓMO USAR',
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF00897B))),
-                    SizedBox(height: 12),
-                    Text(
+                            color: _naranjaClaro)),
+                    const SizedBox(height: 16),
+                    const Text(
                       '1. Muestra este código QR al ingresar a la universidad\n\n'
                       '2. El personal de seguridad lo escaneará\n\n'
                       '3. Se registrará el ingreso en el sistema\n\n'
                       '4. Puedes ver tu historial de ingresos en cualquier momento',
                       style: TextStyle(
                           fontSize: 13,
-                          color: Color(0xFF555555),
-                          height: 1.5),
+                          color: Color(0xFF666666),
+                          height: 1.6),
                     ),
                   ],
                 ),
@@ -164,7 +171,7 @@ class _VerQrScreenState extends State<VerQrScreen> {
 
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 56,
                 child: ElevatedButton.icon(
                   onPressed: _compartiendo ? null : _compartirQr,
                   icon: _compartiendo
@@ -176,9 +183,10 @@ class _VerQrScreenState extends State<VerQrScreen> {
                       : const Icon(Icons.share),
                   label: Text(_compartiendo ? 'Compartiendo...' : 'Compartir QR'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00897B),
+                    backgroundColor: _naranjaClaro,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(14)),
+                    elevation: 4,
                   ),
                 ),
               ),

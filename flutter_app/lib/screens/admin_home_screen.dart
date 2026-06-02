@@ -23,6 +23,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   bool _isLoading = true;
   final _busquedaController = TextEditingController();
   DateTime? _fechaFiltro;
+  static const Color _naranjaClaro = Color(0xFF5B7FFF);
 
   @override
   void initState() {
@@ -123,59 +124,41 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
         title: const Text('Panel Admin'),
-        backgroundColor: Colors.deepPurple,
-        elevation: 0,
+        backgroundColor: _naranjaClaro,
+        elevation: 1,
         actions: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Center(
-              child: Text(widget.usuario, style: const TextStyle(color: Colors.white, fontSize: 13)),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PerfilScreen()),
+                  );
+                },
+                child: Text(
+                  widget.usuario,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ),
           ),
-          PopupMenuButton(
-  onSelected: (value) {
-    if (value == 'logout') {
-      _logout();
-    } else if (value == 'perfil') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const PerfilScreen()),
-      );
-    }
-  },
-  itemBuilder: (context) => [
-    const PopupMenuItem(
-      value: 'perfil',
-      child: Row(
-        children: [
-          Icon(Icons.person_outline),
-          SizedBox(width: 8),
-          Text('Mi Perfil'),
-        ],
-      ),
-    ),
-    const PopupMenuItem(
-      value: 'logout',
-      child: Row(
-        children: [
-          Icon(Icons.logout),
-          SizedBox(width: 8),
-          Text('Cerrar Sesión'),
-        ],
-      ),
-    ),
-  ],
-),
         ],
       ),
       body: SafeArea(
         child: Column(
           children: [
             Container(
-              color: Colors.deepPurple,
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              color: _naranjaClaro,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               child: Row(
                 children: [
                   _buildStatCard('Total', '${_escaneos.length}', Icons.qr_code_scanner),
@@ -185,7 +168,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
                   TextField(
@@ -194,11 +177,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     decoration: InputDecoration(
                       hintText: 'Buscar por alumno, código, objeto...',
                       prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                      prefixIconColor: _naranjaClaro,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       ElevatedButton.icon(
@@ -209,10 +191,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                               ? 'Filtrar por fecha'
                               : '${_fechaFiltro!.day}/${_fechaFiltro!.month}/${_fechaFiltro!.year}',
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple,
-                          foregroundColor: Colors.white,
-                        ),
                       ),
                       if (_fechaFiltro != null) ...[
                         const SizedBox(width: 8),
@@ -220,12 +198,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           onPressed: _limpiarFiltros,
                           icon: const Icon(Icons.clear, size: 16),
                           label: const Text('Limpiar'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: _naranjaClaro,
+                          ),
                         ),
                       ],
                       const Spacer(),
                       IconButton(
                         onPressed: _cargarEscaneos,
                         icon: const Icon(Icons.refresh),
+                        color: _naranjaClaro,
                         tooltip: 'Actualizar',
                       ),
                     ],
@@ -235,7 +217,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ),
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(_naranjaClaro),
+                      ),
+                    )
                   : _escaneosFiltrados.isEmpty
                       ? Center(
                           child: Column(
@@ -249,6 +235,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         )
                       : RefreshIndicator(
                           onRefresh: _cargarEscaneos,
+                          color: _naranjaClaro,
                           child: ListView.builder(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             itemCount: _escaneosFiltrados.length,
@@ -257,35 +244,100 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                               final fecha = _formatearFecha(e['fecha_hora']?.toString() ?? '');
                               final nombreCompleto = '${e['alumno'] ?? ''} ${e['apellido'] ?? ''}'.trim();
                               return Card(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                child: ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Colors.deepPurple.shade100,
-                                    child: const Icon(Icons.qr_code, color: Colors.deepPurple, size: 20),
+                                margin: const EdgeInsets.only(bottom: 10),
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color(0xFFE8E8E8),
+                                      width: 1,
+                                    ),
                                   ),
-                                  title: Text(
-                                    e['objeto'] ?? 'Sin nombre',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('👤 $nombreCompleto', style: const TextStyle(fontSize: 12)),
-                                      Text('🎓 ${e['codigo_estudiante'] ?? 'Sin código'}', style: const TextStyle(fontSize: 12)),
-                                      Text('📍 ${e['ubicacion'] ?? 'Sin ubicación'}', style: const TextStyle(fontSize: 12)),
-                                      Text('🕐 $fecha', style: const TextStyle(fontSize: 12)),
-                                    ],
-                                  ),
-                                  isThreeLine: false,
-                                  trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => AdminDetalleEscaneoScreen(escaneo: e),
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 10,
+                                    ),
+                                    leading: Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        color: _naranjaClaro.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
-                                    );
-                                  },
+                                      child: Icon(
+                                        Icons.qr_code_2,
+                                        color: _naranjaClaro,
+                                        size: 22,
+                                      ),
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            e['objeto'] ?? 'Sin nombre',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                              color: Color(0xFF1F1F1F),
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: e['tipo_evento'] == 'ENTRADA'
+                                                ? const Color(0xFF00D084).withOpacity(0.15)
+                                                : Colors.red.shade100,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            e['tipo_evento'] ?? 'ENTRADA',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: e['tipo_evento'] == 'ENTRADA'
+                                                  ? const Color(0xFF00D084)
+                                                  : Colors.red.shade700,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    subtitle: Padding(
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: Text(
+                                        '$nombreCompleto • ${e['ubicacion'] ?? 'Sin ubicación'} • $fecha',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF888888),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    trailing: Icon(
+                                      Icons.arrow_forward_ios,
+                                      size: 14,
+                                      color: _naranjaClaro.withOpacity(0.5),
+                                    ),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              AdminDetalleEscaneoScreen(escaneo: e),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               );
                             },
@@ -301,20 +353,38 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   Widget _buildStatCard(String label, String valor, IconData icon) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(10),
+          color: Colors.white.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.2),
+            width: 1,
+          ),
         ),
         child: Row(
           children: [
             Icon(icon, color: Colors.white, size: 28),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                Text(valor, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  valor,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           ],

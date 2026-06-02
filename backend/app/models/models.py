@@ -45,7 +45,6 @@ class UsuarioModel:
             ))
 
             usuario_id = cursor.fetchone()[0]
-
             conn.commit()
 
             return {
@@ -74,9 +73,7 @@ class UsuarioModel:
         """, (correo,))
 
         resultado = cursor.fetchone()
-
         cursor.close()
-
         return resultado
 
     @staticmethod
@@ -90,9 +87,7 @@ class UsuarioModel:
         """, (usuario_id,))
 
         resultado = cursor.fetchone()
-
         cursor.close()
-
         return resultado
 
     @staticmethod
@@ -114,9 +109,7 @@ class UsuarioModel:
         """, (usuario_id,))
 
         resultado = cursor.fetchone()
-
         cursor.close()
-
         return resultado
 
     @staticmethod
@@ -171,9 +164,7 @@ class UsuarioModel:
             """, valores)
 
             resultado = cursor.fetchone()
-
             conn.commit()
-
             return resultado
 
         except Exception as e:
@@ -204,10 +195,7 @@ class UsuarioModel:
             if not resultado:
                 raise Exception("Usuario no encontrado")
 
-            if not PasswordHash.verify_password(
-                contrasena_actual,
-                resultado[0]
-            ):
+            if not PasswordHash.verify_password(contrasena_actual, resultado[0]):
                 raise Exception("Contraseña actual incorrecta")
 
             nuevo_hash = PasswordHash.hash_password(contrasena_nueva)
@@ -219,7 +207,6 @@ class UsuarioModel:
             """, (nuevo_hash, usuario_id))
 
             conn.commit()
-
             return True
 
         except Exception as e:
@@ -255,16 +242,9 @@ class ObjetoModel:
                 )
                 VALUES (%s, %s, %s, %s, %s)
                 RETURNING id
-            """, (
-                nombre,
-                qr_code,
-                categoria_id,
-                usuario_id,
-                descripcion
-            ))
+            """, (nombre, qr_code, categoria_id, usuario_id, descripcion))
 
             objeto_id = cursor.fetchone()[0]
-
             conn.commit()
 
             return {
@@ -299,22 +279,19 @@ class ObjetoModel:
         """)
 
         datos = cursor.fetchall()
-
         cursor.close()
 
-        resultado = []
-
-        for fila in datos:
-            resultado.append({
+        return [
+            {
                 "id": fila[0],
                 "nombre": fila[1],
                 "qr_code": fila[2],
                 "descripcion": fila[3],
                 "categoria": fila[4],
                 "dueno": fila[5]
-            })
-
-        return resultado
+            }
+            for fila in datos
+        ]
 
     @staticmethod
     def obtener_por_qr(qr_code: str):
@@ -336,9 +313,7 @@ class ObjetoModel:
         """, (qr_code,))
 
         resultado = cursor.fetchone()
-
         cursor.close()
-
         return resultado
 
     @staticmethod
@@ -361,9 +336,7 @@ class ObjetoModel:
         """, (objeto_id,))
 
         resultado = cursor.fetchone()
-
         cursor.close()
-
         return resultado
 
     @staticmethod
@@ -386,9 +359,7 @@ class ObjetoModel:
         """, (usuario_id,))
 
         resultado = cursor.fetchall()
-
         cursor.close()
-
         return resultado
 
 
@@ -406,41 +377,35 @@ class EscaneoModel:
 
         try:
             if usuario_id is None:
-
-                cursor.execute("""
-                    SELECT usuario_id
-                    FROM objetos
-                    WHERE id = %s
-                """, (objeto_id,))
-
+                cursor.execute("SELECT usuario_id FROM objetos WHERE id = %s", (objeto_id,))
                 resultado = cursor.fetchone()
-
                 if resultado:
                     usuario_id = resultado[0]
                 else:
                     raise Exception("Objeto no encontrado")
 
             cursor.execute("""
-                INSERT INTO escaneos(
-                    objeto_id,
-                    ubicacion,
-                    dispositivo,
-                    usuario_id
-                )
-                VALUES (%s, %s, %s, %s)
+                SELECT tipo_evento FROM escaneos
+                WHERE objeto_id = %s
+                ORDER BY fecha_hora DESC
+                LIMIT 1
+            """, (objeto_id,))
+            ultimo = cursor.fetchone()
+
+            if ultimo is None or ultimo[0] == 'SALIDA':
+                tipo_evento = 'ENTRADA'
+            else:
+                tipo_evento = 'SALIDA'
+
+            cursor.execute("""
+                INSERT INTO escaneos(objeto_id, ubicacion, dispositivo, usuario_id, tipo_evento)
+                VALUES (%s, %s, %s, %s, %s)
                 RETURNING id
-            """, (
-                objeto_id,
-                ubicacion,
-                dispositivo,
-                usuario_id
-            ))
+            """, (objeto_id, ubicacion, dispositivo, usuario_id, tipo_evento))
 
             escaneo_id = cursor.fetchone()[0]
-
             conn.commit()
-
-            return {"id": escaneo_id}
+            return {"id": escaneo_id, "tipo_evento": tipo_evento}
 
         except Exception as e:
             conn.rollback()
@@ -464,7 +429,8 @@ class EscaneoModel:
                 u.nombre as alumno,
                 u.apellido,
                 u.codigo_estudiante,
-                u.telefono
+                u.telefono,
+                e.tipo_evento
             FROM escaneos e
             JOIN objetos o ON e.objeto_id = o.id
             JOIN cuentas u ON e.usuario_id = u.id
@@ -473,13 +439,10 @@ class EscaneoModel:
         """, (limite,))
 
         datos = cursor.fetchall()
-
         cursor.close()
 
-        resultado = []
-
-        for fila in datos:
-            resultado.append({
+        return [
+            {
                 "id": fila[0],
                 "objeto": fila[1],
                 "qr_code": fila[2],
@@ -489,10 +452,11 @@ class EscaneoModel:
                 "alumno": fila[6],
                 "apellido": fila[7],
                 "codigo_estudiante": fila[8],
-                "telefono": fila[9]
-            })
-
-        return resultado
+                "telefono": fila[9],
+                "tipo_evento": fila[10]
+            }
+            for fila in datos
+        ]
 
     @staticmethod
     def obtener_historial_objeto(
@@ -514,9 +478,7 @@ class EscaneoModel:
         """, (objeto_id, limite))
 
         resultado = cursor.fetchall()
-
         cursor.close()
-
         return resultado
 
     @staticmethod
@@ -543,9 +505,7 @@ class EscaneoModel:
         """, (usuario_id, limite))
 
         resultado = cursor.fetchall()
-
         cursor.close()
-
         return resultado
 
 
@@ -569,15 +529,10 @@ class EstadisticasModel:
                 c.nombre,
                 COUNT(o.id) as cantidad
             FROM categorias c
-            LEFT JOIN objetos o
-                ON c.id = o.categoria_id
+            LEFT JOIN objetos o ON c.id = o.categoria_id
             GROUP BY c.id, c.nombre
         """)
-
-        objetos_por_categoria = {
-            row[0]: row[1]
-            for row in cursor.fetchall()
-        }
+        objetos_por_categoria = {row[0]: row[1] for row in cursor.fetchall()}
 
         cursor.execute("""
             SELECT
@@ -586,18 +541,13 @@ class EstadisticasModel:
             FROM escaneos
             GROUP BY dispositivo
         """)
-
-        escaneos_por_dispositivo = {
-            row[0]: row[1]
-            for row in cursor.fetchall()
-        }
+        escaneos_por_dispositivo = {row[0]: row[1] for row in cursor.fetchall()}
 
         cursor.execute("""
             SELECT COUNT(*)
             FROM escaneos
             WHERE fecha_hora >= NOW() - INTERVAL '1 day'
         """)
-
         escaneos_ultimo_dia = cursor.fetchone()[0]
 
         cursor.execute("""
@@ -605,7 +555,6 @@ class EstadisticasModel:
             FROM escaneos
             WHERE fecha_hora >= NOW() - INTERVAL '7 days'
         """)
-
         escaneos_ultima_semana = cursor.fetchone()[0]
 
         cursor.close()

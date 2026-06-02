@@ -20,6 +20,7 @@ class _QrScanScreenState extends State<QrScanScreen> {
   final _apiService = ApiService();
   MobileScannerController? _controller;
   bool _isProcessing = false;
+  static const Color _naranjaClaro = Color(0xFF5B7FFF);
 
   @override
   void initState() {
@@ -57,15 +58,23 @@ class _QrScanScreenState extends State<QrScanScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Objeto Encontrado'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Objeto Encontrado', style: TextStyle(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Nombre: ${objeto.nombre}'),
+            Text('Nombre: ${objeto.nombre}', style: const TextStyle(fontSize: 14)),
             if (objeto.descripcion != null)
-              Text('Descripción: ${objeto.descripcion}'),
-            Text('QR: ${objeto.qrCode}'),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text('Descripción: ${objeto.descripcion}', style: const TextStyle(fontSize: 14)),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text('QR: ${objeto.qrCode}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'monospace')),
+            ),
           ],
         ),
         actions: [
@@ -78,7 +87,11 @@ class _QrScanScreenState extends State<QrScanScreen> {
               Navigator.pop(context);
               _registrarEscaneo(objeto, qrCode);
             },
-            child: const Text('Registrar Escaneo'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _naranjaClaro,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Registrar Escaneo', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -96,23 +109,38 @@ class _QrScanScreenState extends State<QrScanScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Registrar Escaneo'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Registrar Escaneo', style: TextStyle(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: _ubicacionController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Ubicación',
                 hintText: 'Ej: Almacén 1',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: _naranjaClaro, width: 2),
+                ),
+                prefixIcon: const Icon(Icons.location_on),
+                prefixIconColor: _naranjaClaro,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
             TextField(
               controller: _dispositivoController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Dispositivo',
                 hintText: 'Ej: Móvil',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: _naranjaClaro, width: 2),
+                ),
+                prefixIcon: const Icon(Icons.devices),
+                prefixIconColor: _naranjaClaro,
               ),
             ),
           ],
@@ -141,7 +169,11 @@ class _QrScanScreenState extends State<QrScanScreen> {
                 setState(() => _isProcessing = false);
               }
             },
-            child: const Text('Guardar'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _naranjaClaro,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Guardar', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -173,7 +205,8 @@ class _QrScanScreenState extends State<QrScanScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Escanear QR'),
-        backgroundColor: Colors.blue.shade600,
+        backgroundColor: _naranjaClaro,
+        elevation: 0,
       ),
       body: Stack(
         children: [
