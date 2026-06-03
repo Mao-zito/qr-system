@@ -10,6 +10,8 @@ class Database:
         if cls._connection is None:
             DATABASE_URL = os.getenv("DATABASE_URL")
 
+            print("DATABASE_URL:", DATABASE_URL)
+
             cls._connection = psycopg2.connect(
                 DATABASE_URL,
                 cursor_factory=RealDictCursor
