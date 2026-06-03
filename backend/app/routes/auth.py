@@ -17,14 +17,15 @@ def login(datos: LoginRequest):
         raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos")
     
     usuario_id, nombre, correo, contraseña_hash, rol = usuario
-    
+
+    # 🔥 DEBUG IMPORTANTE
+    print("HASH DESDE DB:", repr(contraseña_hash))
+
     if not PasswordHash.verify_password(datos.contrasena, contraseña_hash):
         raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos")
     
-    # Crear token JWT
     token = TokenManager.create_access_token(
-        data={"sub": str(usuario_id), "correo": correo, "rol": rol}  # 👈 str()
-
+        data={"sub": str(usuario_id), "correo": correo, "rol": rol}
     )
     
     return {
