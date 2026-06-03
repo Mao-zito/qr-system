@@ -13,7 +13,8 @@ class HistorialScreen extends StatefulWidget {
 
 class _HistorialScreenState extends State<HistorialScreen> {
   late Future<List<Escaneo>> _futureHistorial;
-  static const Color _naranjaClaro = Color(0xFF5B7FFF);
+  static const Color _naranjaVivo = Color(0xFFFF6B00);
+  static const Color _naranjaNaranja = Color(0xFFFF8C00);
 
   @override
   void initState() {
@@ -37,11 +38,12 @@ class _HistorialScreenState extends State<HistorialScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
         title: const Text('Mi Historial de Ingresos'),
-        backgroundColor: _naranjaClaro,
-        elevation: 0,
+        backgroundColor: _naranjaVivo,
+        elevation: 8,
+        shadowColor: _naranjaVivo.withOpacity(0.4),
       ),
       body: SafeArea(
         child: FutureBuilder<List<Escaneo>>(
@@ -50,7 +52,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(_naranjaClaro),
+                  valueColor: AlwaysStoppedAnimation<Color>(_naranjaVivo),
                 ),
               );
             }
@@ -60,21 +62,36 @@ class _HistorialScreenState extends State<HistorialScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 64,
-                      color: Colors.red,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Error: ${snapshot.error}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF666666),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.error_outline,
+                        size: 60,
+                        color: Colors.red,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
+                    Text(
+                      'Error al cargar historial',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.red,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      snapshot.error.toString(),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                    ),
+                    const SizedBox(height: 32),
                     ElevatedButton.icon(
                       onPressed: () {
                         setState(() {
@@ -83,12 +100,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
                       },
                       icon: const Icon(Icons.refresh),
                       label: const Text('Reintentar'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _naranjaClaro,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
                     ),
                   ],
                 ),
@@ -102,27 +113,32 @@ class _HistorialScreenState extends State<HistorialScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.history,
-                      size: 64,
-                      color: Color(0xFFCCCCCC),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: _naranjaVivo.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.history,
+                        size: 60,
+                        color: _naranjaVivo.withOpacity(0.5),
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
+                    const SizedBox(height: 18),
+                    Text(
                       'No hay registros de ingreso',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF666666),
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey.shade700,
+                          ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    const SizedBox(height: 6),
+                    Text(
                       'Tus ingresos aparecerán aquí',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF999999),
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
                     ),
                   ],
                 ),
@@ -136,134 +152,157 @@ class _HistorialScreenState extends State<HistorialScreen> {
                 });
                 await _futureHistorial;
               },
-              color: _naranjaClaro,
+              color: _naranjaVivo,
               child: ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: escaneos.length,
                 itemBuilder: (context, index) {
                   final escaneo = escaneos[index];
-                  return Card(
-                    elevation: 4,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    shadowColor: _naranjaClaro.withOpacity(0.2),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Objeto
-                            Row(
-                              children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: _naranjaClaro,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.backpack,
-                                      color: Colors.white,
-                                      size: 24,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        escaneo.objeto ?? 'Objeto',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF333333),
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        _formatearFecha(
-                                            escaneo.fechaHora ?? DateTime.now()),
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFF999999),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          const SizedBox(height: 12),
-                          const Divider(height: 1),
-                          const SizedBox(height: 12),
-                          // Ubicación y Dispositivo
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'UBICACIÓN',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF999999),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      escaneo.ubicacion ?? 'Entrada principal',
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Color(0xFF555555),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'DISPOSITIVO',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF999999),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      escaneo.dispositivo ?? 'ESP32',
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Color(0xFF555555),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: _buildEscaneoCard(escaneo),
                   );
                 },
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEscaneoCard(Escaneo escaneo) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        color: Colors.white,
+        border: Border.all(
+          color: const Color(0xFFE8E8E8),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Encabezado con objeto y fecha
+            Row(
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: _naranjaVivo.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: LinearGradient(
+                      colors: [
+                        _naranjaVivo.withOpacity(0.15),
+                        _naranjaNaranja.withOpacity(0.08),
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.backpack_outlined,
+                      color: _naranjaVivo,
+                      size: 26,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        escaneo.objeto ?? 'Objeto',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1F1F1F),
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatearFecha(escaneo.fechaHora ?? DateTime.now()),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w400,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              height: 1,
+              color: Colors.grey.shade200,
+            ),
+            const SizedBox(height: 14),
+            // Ubicación y Dispositivo
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'UBICACIÓN',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey.shade600,
+                              letterSpacing: 0.5,
+                            ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        escaneo.ubicacion ?? 'Entrada principal',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF333333),
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'DISPOSITIVO',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey.shade600,
+                              letterSpacing: 0.5,
+                            ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        escaneo.dispositivo ?? 'ESP32',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF333333),
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

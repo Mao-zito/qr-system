@@ -15,7 +15,10 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
   final _descripcionController = TextEditingController();
   int? _categoriaSeleccionada;
   bool _isLoading = false;
-  static const Color _naranjaClaro = Color(0xFF5B7FFF);
+  
+  static const Color _naranjaVivo = Color(0xFFFF6B00);
+  static const Color _naranjaNaranja = Color(0xFFFF8C00);
+  static const Color _blanco = Color(0xFFFAFAFA);
 
   final List<Map<String, dynamic>> categorias = [
     {'id': 1, 'nombre': 'Laptop'},
@@ -52,9 +55,12 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
       if (mounted) {
         if (resultado['success']) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Objeto registrado exitosamente'),
-              backgroundColor: Colors.green,
+            SnackBar(
+              content: const Text('Objeto registrado exitosamente'),
+              backgroundColor: Colors.green.shade500,
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           );
           Navigator.pop(context, true);
@@ -62,7 +68,10 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(resultado['error'] ?? 'Error al registrar objeto'),
-              backgroundColor: Colors.red,
+              backgroundColor: Colors.red.shade500,
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           );
         }
@@ -72,7 +81,10 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.red.shade500,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -88,38 +100,37 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: _blanco,
       appBar: AppBar(
         title: const Text('Registrar Objeto'),
-        backgroundColor: _naranjaClaro,
-        elevation: 0,
+        backgroundColor: _naranjaVivo,
+        elevation: 8,
+        shadowColor: _naranjaVivo.withOpacity(0.4),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(20.0),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Título
-                const Text(
-                  'Registra tu objeto personal',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF333333),
-                  ),
+                Text(
+                  'Registra tu objeto',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: _naranjaVivo,
+                      ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
+                const SizedBox(height: 6),
+                Text(
                   'Se generará un código QR único para tu objeto',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF999999),
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey.shade600,
+                      ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 28),
 
                 // Campo: Nombre del objeto
                 TextFormField(
@@ -127,16 +138,7 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
                   decoration: InputDecoration(
                     labelText: 'Nombre del objeto',
                     hintText: 'ej: Mi laptop HP',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: _naranjaClaro, width: 2),
-                    ),
-                    prefixIcon: const Icon(Icons.backpack),
-                    prefixIconColor: _naranjaClaro,
-                    contentPadding: const EdgeInsets.all(16),
+                    prefixIcon: const Icon(Icons.backpack_outlined, color: _naranjaVivo),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -148,23 +150,14 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
                 // Campo: Categoría
                 DropdownButtonFormField<int>(
                   value: _categoriaSeleccionada,
                   decoration: InputDecoration(
                     labelText: 'Categoría',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: _naranjaClaro, width: 2),
-                    ),
-                    prefixIcon: const Icon(Icons.category),
-                    prefixIconColor: _naranjaClaro,
-                    contentPadding: const EdgeInsets.all(16),
+                    prefixIcon: const Icon(Icons.category_outlined, color: _naranjaVivo),
                   ),
                   items: categorias.map((cat) {
                     return DropdownMenuItem<int>(
@@ -184,7 +177,7 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
                 // Campo: Descripción
                 TextFormField(
@@ -192,16 +185,8 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
                   decoration: InputDecoration(
                     labelText: 'Descripción (opcional)',
                     hintText: 'ej: Laptop plateada con marca XYZ',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: _naranjaClaro, width: 2),
-                    ),
-                    prefixIcon: const Icon(Icons.description),
-                    prefixIconColor: _naranjaClaro,
-                    contentPadding: const EdgeInsets.all(16),
+                    prefixIcon: const Icon(Icons.description_outlined, color: _naranjaVivo),
+                    alignLabelWithHint: true,
                   ),
                   maxLines: 3,
                 ),
@@ -213,30 +198,21 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
                   height: 56,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _registrarObjeto,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _naranjaClaro,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 4,
-                    ),
                     child: _isLoading
                         ? const SizedBox(
-                            width: 20,
-                            height: 20,
+                            width: 24,
+                            height: 24,
                             child: CircularProgressIndicator(
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              strokeWidth: 3,
                             ),
                           )
-                        : const Text(
+                        : Text(
                             'Registrar Objeto',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
                           ),
                   ),
                 ),

@@ -217,6 +217,75 @@ class UsuarioModel:
             cursor.close()
 
 
+    @staticmethod
+    def obtener_alumnos_con_estado():
+        cursor = get_cursor_simple()
+        cursor.execute("""
+            SELECT 
+                u.id,
+                u.nombre,
+                u.apellido,
+                u.codigo_estudiante,
+                u.telefono,
+                u.correo,
+                u.foto_perfil,
+                e.tipo_evento as ultimo_evento,
+                e.fecha_hora as ultima_fecha
+            FROM cuentas u
+            LEFT JOIN (
+                SELECT DISTINCT ON (usuario_id) 
+                    usuario_id, tipo_evento, fecha_hora
+                FROM escaneos
+                ORDER BY usuario_id, fecha_hora DESC
+            ) e ON u.id = e.usuario_id
+            WHERE u.rol != 'admin'
+            ORDER BY u.nombre
+        """)
+        datos = cursor.fetchall()
+        cursor.close()
+        resultado = []
+        for fila in datos:
+            resultado.append({
+                "id": fila[0],
+                "nombre": fila[1],
+                "apellido": fila[2],
+                "codigo_estudiante": fila[3],
+                "telefono": fila[4],
+                "correo": fila[5],
+                "foto_perfil": fila[6],
+                "ultimo_evento": fila[7],
+                "ultima_fecha": str(fila[8]) if fila[8] else None
+            })
+        return resultado
+
+    @staticmethod
+    def obtener_historial_alumno(usuario_id: int, limite: int = 50):
+        cursor = get_cursor_simple()
+        cursor.execute("""
+            SELECT e.id, o.nombre, o.qr_code, e.ubicacion, 
+                   e.dispositivo, e.fecha_hora, e.tipo_evento
+            FROM escaneos e
+            JOIN objetos o ON e.objeto_id = o.id
+            WHERE e.usuario_id = %s
+            ORDER BY e.fecha_hora DESC
+            LIMIT %s
+        """, (usuario_id, limite))
+        datos = cursor.fetchall()
+        cursor.close()
+        resultado = []
+        for fila in datos:
+            resultado.append({
+                "id": fila[0],
+                "objeto": fila[1],
+                "qr_code": fila[2],
+                "ubicacion": fila[3],
+                "dispositivo": fila[4],
+                "fecha_hora": str(fila[5]),
+                "tipo_evento": fila[6]
+            })
+        return resultado
+
+
 class ObjetoModel:
 
     @staticmethod

@@ -36,7 +36,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
     _cargarPerfil();
   }
 
-  static const Color _naranjaClaro = Color(0xFF5B7FFF);
+  static const Color _naranjaVivo = Color(0xFFFF6B00);
+  static const Color _naranjaNaranja = Color(0xFFFF8C00);
   static const Color _blanco = Color(0xFFFAFAFA);
 
   @override
@@ -165,34 +166,39 @@ class _PerfilScreenState extends State<PerfilScreen> {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) => Padding(
         padding: EdgeInsets.only(
           left: 24,
           right: 24,
-          top: 24,
+          top: 28,
           bottom: MediaQuery.of(context).viewInsets.bottom + 24,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Cambiar contraseña',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1F1F1F),
-              ),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: _naranjaVivo,
+                  ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 6),
+            Text(
+              'Actualiza tu contraseña para mantener tu cuenta segura',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey.shade600,
+                  ),
+            ),
+            const SizedBox(height: 28),
             TextField(
               controller: _contrasenaActualController,
               decoration: InputDecoration(
                 labelText: 'Contraseña actual',
-                prefixIcon: const Icon(Icons.lock_outline),
-                prefixIconColor: _naranjaClaro,
+                prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
               ),
               obscureText: true,
             ),
@@ -201,8 +207,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               controller: _contrasenaNuevaController,
               decoration: InputDecoration(
                 labelText: 'Nueva contraseña',
-                prefixIcon: const Icon(Icons.lock_outline),
-                prefixIconColor: _naranjaClaro,
+                prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
               ),
               obscureText: true,
             ),
@@ -211,12 +216,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
               controller: _confirmarContrasenaController,
               decoration: InputDecoration(
                 labelText: 'Confirmar nueva contraseña',
-                prefixIcon: const Icon(Icons.lock_outline),
-                prefixIconColor: _naranjaClaro,
+                prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
               ),
               obscureText: true,
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -224,16 +228,19 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 onPressed: _guardando ? null : _cambiarContrasena,
                 child: _guardando
                     ? const SizedBox(
-                        height: 20,
-                        width: 20,
+                        height: 24,
+                        width: 24,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
+                          strokeWidth: 3,
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Text(
+                    : Text(
                         'Cambiar contraseña',
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
               ),
             ),
@@ -249,8 +256,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
       backgroundColor: _blanco,
       appBar: AppBar(
         title: const Text('Mi Perfil'),
-        backgroundColor: _naranjaClaro,
-        elevation: 0,
+        backgroundColor: _naranjaVivo,
+        elevation: 8,
+        shadowColor: _naranjaVivo.withOpacity(0.4),
         actions: [
           if (!_editando)
             IconButton(
@@ -272,7 +280,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(_naranjaClaro),
+                valueColor: AlwaysStoppedAnimation<Color>(_naranjaVivo),
               ),
             )
           : SingleChildScrollView(
@@ -283,22 +291,40 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   Center(
                     child: Stack(
                       children: [
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundColor: _naranjaClaro.withOpacity(0.15),
-                          backgroundImage: _perfil!['foto_perfil'] != null
-                              ? MemoryImage(base64Decode(_perfil!['foto_perfil']))
-                              : null,
-                          child: _perfil!['foto_perfil'] == null
-                              ? Text(
-                                  (_perfil!['nombre'] ?? 'U')[0].toUpperCase(),
-                                  style: const TextStyle(
-                                    fontSize: 40,
-                                    color: _naranjaClaro,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                )
-                              : null,
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [
+                                _naranjaVivo,
+                                _naranjaNaranja,
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _naranjaVivo.withOpacity(0.25),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 58,
+                            backgroundColor: _blanco,
+                            backgroundImage: _perfil!['foto_perfil'] != null
+                                ? MemoryImage(base64Decode(_perfil!['foto_perfil']))
+                                : null,
+                            child: _perfil!['foto_perfil'] == null
+                                ? Text(
+                                    (_perfil!['nombre'] ?? 'U')[0].toUpperCase(),
+                                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                          color: _naranjaVivo,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                  )
+                                : null,
+                          ),
                         ),
                         Positioned(
                           bottom: 0,
@@ -306,148 +332,162 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           child: GestureDetector(
                             onTap: _seleccionarFoto,
                             child: Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: _naranjaClaro,
+                                color: _naranjaVivo,
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _naranjaClaro.withOpacity(0.25),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
+                                    color: _naranjaVivo.withOpacity(0.3),
+                                    blurRadius: 12,
+                                    spreadRadius: 2,
                                   ),
                                 ],
                               ),
-                              child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   Text(
                     '${_perfil!['nombre'] ?? ''} ${_perfil!['apellido'] ?? ''}'.trim(),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1F1F1F),
-                    ),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFF1F1F1F),
+                        ),
                   ),
-                  Text(
-                    _perfil!['rol']?.toString().toUpperCase() ?? '',
-                    style: const TextStyle(
-                      color: Color(0xFF5B7FFF),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _naranjaVivo.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _perfil!['rol']?.toString().toUpperCase() ?? '',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: _naranjaVivo,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                          ),
                     ),
                   ),
                   const SizedBox(height: 32),
 
                   // Datos
-                  Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: 1,
-                    shadowColor: Colors.black.withOpacity(0.08),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE8E8E8)),
-                      ),
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'INFORMACIÓN PERSONAL',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: _naranjaClaro,
-                              letterSpacing: 0.5,
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      color: Colors.white,
+                      border: Border.all(color: const Color(0xFFE8E8E8), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 12,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(22),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'INFORMACIÓN PERSONAL',
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: _naranjaVivo,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.8,
+                              ),
+                        ),
+                        const SizedBox(height: 18),
+                        if (_editando) ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _nombreController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Nombre',
+                                    prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: TextField(
+                                  controller: _apellidoController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Apellido',
+                                    prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: _telefonoController,
+                            decoration: InputDecoration(
+                              labelText: 'Teléfono',
+                              prefixIcon: const Icon(Icons.phone_outlined, color: Color(0xFFFF6B00)),
+                            ),
+                            keyboardType: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: _guardando ? null : _guardarPerfil,
+                              child: _guardando
+                                  ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 3,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : Text(
+                                      'Guardar cambios',
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
                             ),
                           ),
-                          const Divider(height: 20),
-                          if (_editando) ...[
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextField(
-                                    controller: _nombreController,
-                                    decoration: InputDecoration(
-                                      labelText: 'Nombre',
-                                      prefixIcon: const Icon(Icons.person_outline),
-                                      prefixIconColor: _naranjaClaro,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: TextField(
-                                    controller: _apellidoController,
-                                    decoration: InputDecoration(
-                                      labelText: 'Apellido',
-                                      prefixIconColor: _naranjaClaro,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
-                            TextField(
-                              controller: _telefonoController,
-                              decoration: InputDecoration(
-                                labelText: 'Teléfono',
-                                prefixIcon: const Icon(Icons.phone_outlined),
-                                prefixIconColor: _naranjaClaro,
-                              ),
-                              keyboardType: TextInputType.phone,
-                            ),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 56,
-                              child: ElevatedButton(
-                                onPressed: _guardando ? null : _guardarPerfil,
-                                child: _guardando
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Guardar cambios',
-                                        style: TextStyle(fontWeight: FontWeight.w600),
-                                      ),
-                              ),
-                            ),
-                          ] else ...[
-                            _buildInfoRow(
-                              Icons.person_outline,
-                              'Nombre completo',
-                              '${_perfil!['nombre'] ?? ''} ${_perfil!['apellido'] ?? ''}'.trim(),
-                            ),
-                            _buildInfoRow(
-                              Icons.email_outlined,
-                              'Correo',
-                              _perfil!['correo'] ?? '-',
-                            ),
-                            _buildInfoRow(
-                              Icons.phone_outlined,
-                              'Teléfono',
-                              _perfil!['telefono'] ?? 'Sin registrar',
-                            ),
-                            _buildInfoRow(
-                              Icons.badge_outlined,
-                              'Código estudiante',
-                              _perfil!['codigo_estudiante'] ?? 'Sin registrar',
-                            ),
-                          ],
+                        ] else ...[
+                          _buildInfoRow(
+                            Icons.person_outline,
+                            'Nombre completo',
+                            '${_perfil!['nombre'] ?? ''} ${_perfil!['apellido'] ?? ''}'.trim(),
+                          ),
+                          _buildInfoRow(
+                            Icons.email_outlined,
+                            'Correo',
+                            _perfil!['correo'] ?? '-',
+                          ),
+                          _buildInfoRow(
+                            Icons.phone_outlined,
+                            'Teléfono',
+                            _perfil!['telefono'] ?? 'Sin registrar',
+                          ),
+                          _buildInfoRow(
+                            Icons.badge_outlined,
+                            'Código estudiante',
+                            _perfil!['codigo_estudiante'] ?? 'Sin registrar',
+                          ),
                         ],
-                      ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -461,13 +501,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       icon: const Icon(Icons.lock_outline),
                       label: const Text('Cambiar contraseña'),
                       style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        side: const BorderSide(color: _naranjaClaro, width: 1.5),
-                        foregroundColor: _naranjaClaro,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        side: const BorderSide(color: Color(0xFFFF6B00), width: 2),
+                        foregroundColor: const Color(0xFFFF6B00),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
 
                   // Cerrar sesión
                   SizedBox(
@@ -479,14 +519,25 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           context: context,
                           builder: (context) => AlertDialog(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                            title: const Text('Cerrar sesión'),
-                            content: const Text('¿Estás seguro de que deseas cerrar sesión?'),
+                            title: Text(
+                              'Cerrar sesión',
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                            content: Text(
+                              '¿Estás seguro de que deseas cerrar sesión?',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: const Text('Cancelar'),
+                                child: const Text(
+                                  'Cancelar',
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ),
                               ),
                               ElevatedButton(
                                 onPressed: () {
@@ -498,7 +549,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                 ),
                                 child: const Text(
                                   'Cerrar sesión',
-                                  style: TextStyle(color: Colors.white),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
                             ],
@@ -508,7 +562,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       icon: const Icon(Icons.logout),
                       label: const Text('Cerrar Sesión'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade400,
+                        backgroundColor: Colors.red.shade500,
                         foregroundColor: Colors.white,
                       ),
                     ),
@@ -522,30 +576,36 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         children: [
-          Icon(icon, color: _naranjaClaro, size: 22),
-          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: _naranjaVivo.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: _naranjaVivo, size: 20),
+          ),
+          const SizedBox(width: 14),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFF888888),
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                    ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 3),
               Text(
                 value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF1F1F1F),
-                ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1F1F1F),
+                    ),
               ),
             ],
           ),

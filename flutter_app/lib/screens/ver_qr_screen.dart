@@ -21,7 +21,10 @@ class VerQrScreen extends StatefulWidget {
 class _VerQrScreenState extends State<VerQrScreen> {
   final ScreenshotController _screenshotController = ScreenshotController();
   bool _compartiendo = false;
-  static const Color _naranjaClaro = Color(0xFF5B7FFF);
+  
+  static const Color _naranjaVivo = Color(0xFFFF6B00);
+  static const Color _naranjaNaranja = Color(0xFFFF8C00);
+  static const Color _blanco = Color(0xFFFAFAFA);
 
   Future<void> _compartirQr() async {
     setState(() => _compartiendo = true);
@@ -40,7 +43,13 @@ class _VerQrScreenState extends State<VerQrScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al compartir: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Error al compartir: $e'),
+            backgroundColor: Colors.red.shade500,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         );
       }
     } finally {
@@ -51,123 +60,161 @@ class _VerQrScreenState extends State<VerQrScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: _blanco,
       appBar: AppBar(
         title: const Text('Mi Código QR'),
-        backgroundColor: _naranjaClaro,
-        elevation: 0,
+        backgroundColor: _naranjaVivo,
+        elevation: 8,
+        shadowColor: _naranjaVivo.withOpacity(0.4),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                shadowColor: _naranjaClaro.withOpacity(0.2),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('OBJETO',
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: _naranjaClaro)),
-                      const SizedBox(height: 12),
-                      Text(widget.objeto.nombre,
-                          style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF333333))),
-                      if (widget.objeto.descripcion != null &&
-                          widget.objeto.descripcion!.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Text('DESCRIPCIÓN',
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: _naranjaClaro)),
-                        const SizedBox(height: 8),
-                        Text(widget.objeto.descripcion!,
-                            style: const TextStyle(
-                                fontSize: 14, color: Color(0xFF666666))),
-                      ],
-                    ],
+              // Info del objeto
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                  border: Border.all(
+                    color: const Color(0xFFE8E8E8),
+                    width: 1.5,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(18.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'OBJETO',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: _naranjaVivo,
+                            letterSpacing: 0.8,
+                          ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      widget.objeto.nombre,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF1F1F1F),
+                          ),
+                    ),
+                    if (widget.objeto.descripcion != null &&
+                        widget.objeto.descripcion!.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      Text(
+                        'DESCRIPCIÓN',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: _naranjaVivo,
+                              letterSpacing: 0.8,
+                            ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        widget.objeto.descripcion!,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
               // QR con Screenshot wrapper
               Screenshot(
                 controller: _screenshotController,
                 child: Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(18),
                   color: Colors.white,
                   child: Column(
                     children: [
-                      Text(widget.objeto.nombre,
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      QrImageView(
-                        data: widget.objeto.qrCode,
-                        version: QrVersions.auto,
-                        size: 250.0,
-                        backgroundColor: Colors.white,
+                      Text(
+                        widget.objeto.nombre,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: _naranjaVivo,
+                            ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(widget.objeto.qrCode,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              fontSize: 12,
+                      const SizedBox(height: 14),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: _naranjaVivo, width: 2),
+                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.white,
+                        ),
+                        child: QrImageView(
+                          data: widget.objeto.qrCode,
+                          version: QrVersions.auto,
+                          size: 220.0,
+                          backgroundColor: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        widget.objeto.qrCode,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontFamily: 'monospace',
-                              color: Color(0xFF666666))),
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
+              // Info: Cómo usar
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: _naranjaClaro.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(16),
+                  color: _naranjaVivo.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: _naranjaClaro.withOpacity(0.2),
-                    width: 1,
+                    color: _naranjaVivo.withOpacity(0.2),
+                    width: 1.5,
                   ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('CÓMO USAR',
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: _naranjaClaro)),
-                    const SizedBox(height: 16),
-                    const Text(
-                      '1. Muestra este código QR al ingresar a la universidad\n\n'
-                      '2. El personal de seguridad lo escaneará\n\n'
-                      '3. Se registrará el ingreso en el sistema\n\n'
-                      '4. Puedes ver tu historial de ingresos en cualquier momento',
-                      style: TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF666666),
-                          height: 1.6),
+                    Text(
+                      'CÓMO USAR',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: _naranjaVivo,
+                            letterSpacing: 0.8,
+                          ),
                     ),
+                    const SizedBox(height: 14),
+                    _buildInstructionStep(context, '1', 'Muestra este código QR al ingresar a la universidad'),
+                    const SizedBox(height: 12),
+                    _buildInstructionStep(context, '2', 'El personal de seguridad lo escaneará'),
+                    const SizedBox(height: 12),
+                    _buildInstructionStep(context, '3', 'Se registrará el ingreso en el sistema'),
+                    const SizedBox(height: 12),
+                    _buildInstructionStep(context, '4', 'Puedes ver tu historial de ingresos en cualquier momento'),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
               SizedBox(
                 width: double.infinity,
@@ -179,14 +226,17 @@ class _VerQrScreenState extends State<VerQrScreen> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2))
-                      : const Icon(Icons.share),
-                  label: Text(_compartiendo ? 'Compartiendo...' : 'Compartir QR'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _naranjaClaro,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    elevation: 4,
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Icon(Icons.share_outlined),
+                  label: Text(
+                    _compartiendo ? 'Compartiendo...' : 'Compartir QR',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
                 ),
               ),
@@ -194,6 +244,45 @@ class _VerQrScreenState extends State<VerQrScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInstructionStep(BuildContext context, String numero, String texto) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: _naranjaVivo,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              numero,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              texto,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

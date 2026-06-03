@@ -134,28 +134,91 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color naranjaClaro = Color(0xFF5B7FFF);
-    const Color blanco = Color(0xFFFFFFFF);
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [naranjaClaro, naranjaClaro.withOpacity(0.7)],
+            colors: [
+              const Color(0xFFFF6B00),
+              const Color(0xFFFF8C00).withOpacity(0.9),
+            ],
           ),
         ),
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              elevation: 8,
-              shadowColor: naranjaClaro.withOpacity(0.3),
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: _mostrarRegistro ? _buildRegistroForm() : _buildLoginForm(),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo moderno
+                TweenAnimationBuilder(
+                  tween: Tween<double>(begin: 0, end: 1),
+                  duration: const Duration(milliseconds: 800),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.95),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 20,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.qr_code_2,
+                          size: 64,
+                          color: Color(0xFFFF6B00),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  'QR System',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Gestión Inteligente de Objetos',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.5,
+                      ),
+                ),
+                const SizedBox(height: 48),
+                // Card con formulario
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(32),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 30,
+                        spreadRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: _mostrarRegistro ? _buildRegistroForm() : _buildLoginForm(),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -164,39 +227,34 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLoginForm() {
-    const Color naranjaClaro = Color(0xFF5B7FFF);
     return Form(
       key: _formKey,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: naranjaClaro.withOpacity(0.1),
-            ),
-            child: const Icon(Icons.qr_code_2, size: 52, color: naranjaClaro),
-          ),
-          const SizedBox(height: 24),
           Text(
-            'QR System',
+            'Bienvenido',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold, color: naranjaClaro),
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFFFF6B00),
+                ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
-            'Gestión de Objetos',
+            'Inicia sesión para continuar',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
+          // Email
           TextFormField(
             controller: _correoController,
             decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.email_outlined),
+              prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFFF6B00)),
               labelText: 'Correo Electrónico',
-              prefixIconColor: naranjaClaro,
+              hintText: 'ejemplo@email.com',
             ),
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
@@ -205,17 +263,17 @@ class _LoginScreenState extends State<LoginScreen> {
               return null;
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
+          // Contraseña
           TextFormField(
             controller: _contrasenaController,
             decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.lock_outline),
+              prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
               labelText: 'Contraseña',
-              prefixIconColor: naranjaClaro,
               suffixIcon: IconButton(
                 icon: Icon(
                   _mostrarContrasena ? Icons.visibility : Icons.visibility_off,
-                  color: naranjaClaro,
+                  color: const Color(0xFFFF6B00),
                 ),
                 onPressed: () => setState(() => _mostrarContrasena = !_mostrarContrasena),
               ),
@@ -227,7 +285,8 @@ class _LoginScreenState extends State<LoginScreen> {
               return null;
             },
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
+          // Botón Login
           SizedBox(
             width: double.infinity,
             height: 56,
@@ -235,32 +294,42 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: _isLoading ? null : _login,
               child: _isLoading
                   ? const SizedBox(
-                      height: 20,
-                      width: 20,
+                      height: 24,
+                      width: 24,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
                     )
-                  : const Text(
+                  : Text(
                       'Iniciar Sesión',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+          // Registro
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 '¿No tienes cuenta? ',
-                style: TextStyle(color: Colors.grey.shade700),
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               GestureDetector(
                 onTap: () => setState(() => _mostrarRegistro = true),
                 child: const Text(
-                  'Registrate',
+                  'Crea una aquí',
                   style: TextStyle(
-                    color: Color(0xFF5B7FFF),
-                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFFF6B00),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
                   ),
                 ),
               ),
@@ -272,38 +341,36 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildRegistroForm() {
-    const Color naranjaClaro = Color(0xFF5B7FFF);
     return Form(
       key: _formKeyReg,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: naranjaClaro.withOpacity(0.1),
-            ),
-            child: const Icon(Icons.person_add, size: 52, color: naranjaClaro),
-          ),
-          const SizedBox(height: 24),
           Text(
             'Crear Cuenta',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold, color: naranjaClaro),
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFFFF6B00),
+                ),
           ),
-          const SizedBox(height: 28),
-
-          // Nombre y Apellido en fila
+          const SizedBox(height: 12),
+          Text(
+            'Completa tu información',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
+          ),
+          const SizedBox(height: 24),
+          // Nombre y Apellido
           Row(
             children: [
               Expanded(
                 child: TextFormField(
                   controller: _nombreControllerReg,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.person_outline),
+                    prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
                     labelText: 'Nombre',
-                    prefixIconColor: naranjaClaro,
                   ),
                   validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
                 ),
@@ -313,6 +380,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: TextFormField(
                   controller: _apellidoControllerReg,
                   decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
                     labelText: 'Apellido',
                   ),
                   validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
@@ -321,24 +389,22 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
           const SizedBox(height: 14),
-
+          // Código
           TextFormField(
             controller: _codigoControllerReg,
             decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.badge_outlined),
+              prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFFFF6B00)),
               labelText: 'Código de Estudiante',
-              prefixIconColor: naranjaClaro,
             ),
             validator: (v) => v == null || v.isEmpty ? 'Ingresa tu código' : null,
           ),
           const SizedBox(height: 14),
-
+          // Teléfono
           TextFormField(
             controller: _telefonoControllerReg,
             decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.phone_outlined),
+              prefixIcon: const Icon(Icons.phone_outlined, color: Color(0xFFFF6B00)),
               labelText: 'Teléfono',
-              prefixIconColor: naranjaClaro,
             ),
             keyboardType: TextInputType.phone,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -349,13 +415,12 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           const SizedBox(height: 14),
-
+          // Email
           TextFormField(
             controller: _correoControllerReg,
             decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.email_outlined),
+              prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFFF6B00)),
               labelText: 'Correo Electrónico',
-              prefixIconColor: naranjaClaro,
             ),
             keyboardType: TextInputType.emailAddress,
             validator: (v) {
@@ -365,17 +430,16 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           const SizedBox(height: 14),
-
+          // Contraseña
           TextFormField(
             controller: _contrasenaControllerReg,
             decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.lock_outline),
+              prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
               labelText: 'Contraseña',
-              prefixIconColor: naranjaClaro,
               suffixIcon: IconButton(
                 icon: Icon(
                   _mostrarContrasenaReg ? Icons.visibility : Icons.visibility_off,
-                  color: naranjaClaro,
+                  color: const Color(0xFFFF6B00),
                 ),
                 onPressed: () => setState(() => _mostrarContrasenaReg = !_mostrarContrasenaReg),
               ),
@@ -388,13 +452,12 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           const SizedBox(height: 14),
-
+          // Confirmar contraseña
           TextFormField(
             controller: _confirmarContrasenaControllerReg,
             decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.lock_outline),
+              prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
               labelText: 'Confirmar Contraseña',
-              prefixIconColor: naranjaClaro,
             ),
             obscureText: true,
             validator: (v) {
@@ -404,7 +467,7 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           const SizedBox(height: 28),
-
+          // Botón Registro
           SizedBox(
             width: double.infinity,
             height: 56,
@@ -412,37 +475,49 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: _isLoading ? null : _registro,
               child: _isLoading
                   ? const SizedBox(
-                      height: 20,
-                      width: 20,
+                      height: 24,
+                      width: 24,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
                     )
-                  : const Text(
+                  : Text(
                       'Registrarse',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
             ),
           ),
-          const SizedBox(height: 18),
-
+          const SizedBox(height: 16),
+          // Volver a login
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 '¿Ya tienes cuenta? ',
-                style: TextStyle(color: Colors.grey.shade700),
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               GestureDetector(
                 onTap: () => setState(() => _mostrarRegistro = false),
                 child: const Text(
-                  'Inicia Sesión',
+                  'Inicia sesión',
                   style: TextStyle(
-                    color: Color(0xFF5B7FFF),
-                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFFF6B00),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
                   ),
                 ),
               ),
             ],
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).padding.bottom + 40,
           ),
         ],
       ),

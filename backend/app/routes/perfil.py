@@ -75,3 +75,34 @@ def cambiar_contrasena(
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/alumnos", response_model=list)
+def obtener_alumnos(token: dict = Depends(TokenManager.verify_token_from_header)):
+    try:
+        rol = token.get("rol")
+        if rol != "admin":
+            raise HTTPException(status_code=403, detail="No tiene permisos")
+        alumnos = UsuarioModel.obtener_alumnos_con_estado()
+        return alumnos
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/alumnos/{usuario_id}/historial", response_model=list)
+def obtener_historial_alumno(
+    usuario_id: int,
+    token: dict = Depends(TokenManager.verify_token_from_header)
+):
+    try:
+        rol = token.get("rol")
+        if rol != "admin":
+            raise HTTPException(status_code=403, detail="No tiene permisos")
+        historial = UsuarioModel.obtener_historial_alumno(usuario_id)
+        return historial
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

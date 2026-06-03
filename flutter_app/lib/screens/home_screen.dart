@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/objeto_model.dart';
 import '../services/api_service.dart';
 import 'historial_screen.dart';
-import 'login_screen.dart';
 import 'perfil_screen.dart';
 import 'registrar_objeto_screen.dart';
 import 'ver_qr_screen.dart';
@@ -29,9 +27,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   int _selectedIndex = 0;
   
-  static const Color _naranja = Color(0xFF5B7FFF);
-  static const Color _naranjaClaro = Color(0xFF5B7FFF);
+  static const Color _naranjaVivo = Color(0xFFFF6B00);
   static const Color _blanco = Color(0xFFFAFAFA);
+  static const Color _naranjaNaranja = Color(0xFFFF8C00);
 
   @override
   void initState() {
@@ -62,37 +60,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('nombre');
-    await prefs.remove('rol');
-    _apiService.logout();
-    if (mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (route) => false,
-      );
-    }
-  }
-
   void _onTabTapped(int index) {
+    setState(() => _selectedIndex = index);
     if (index == 1) {
-      // Historial
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const HistorialScreen()),
-      );
+      ).then((_) {
+        setState(() => _selectedIndex = 0);
+      });
     } else if (index == 2) {
-      // Perfil
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const PerfilScreen()),
-      );
-    } else {
-      // Inicio
-      setState(() {
-        _selectedIndex = 0;
+      ).then((_) {
+        setState(() => _selectedIndex = 0);
       });
     }
   }
@@ -124,8 +106,14 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: _blanco,
       appBar: AppBar(
         title: const Text('QR System'),
-        backgroundColor: _naranjaClaro,
-        elevation: 1,
+        backgroundColor: _naranjaVivo,
+        elevation: 8,
+        shadowColor: _naranjaVivo.withOpacity(0.4),
+        centerTitle: false,
+        titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -137,12 +125,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (context) => const PerfilScreen()),
                   );
                 },
-                child: Text(
-                  widget.usuario,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    widget.usuario,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                 ),
               ),
@@ -154,72 +148,97 @@ class _HomeScreenState extends State<HomeScreen> {
         child: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(_naranjaClaro),
+                  valueColor: AlwaysStoppedAnimation<Color>(_naranjaVivo),
                 ),
               )
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Título
-                    const Text(
-                      'Panel de Control',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
-                      ),
+                    // Título principal
+                    Text(
+                      '¡Hola, ${widget.usuario}!',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: const Color(0xFF1a1a1a),
+                          ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    const SizedBox(height: 6),
+                    Text(
                       'Gestiona tus objetos y visualiza tus ingresos',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF999999),
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
                     const SizedBox(height: 32),
 
-                    // Botón: Registrar Objeto
+                    // Card destacada: Registrar Objeto
                     _buildActionCard(
-                      icon: Icons.add_circle_outline,
+                      icon: Icons.add_circle,
                       titulo: 'Registrar Objeto',
                       descripcion: 'Crea un nuevo objeto y obtén su código QR',
                       onTap: _irARegistroObjeto,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 28),
 
                     // Sección: Mis Objetos
-                    const Text(
-                      'MIS OBJETOS',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF666666),
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'MIS OBJETOS (${_misObjetos.length})',
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF666666),
+                                letterSpacing: 0.5,
+                              ),
+                        ),
+                        if (_misObjetos.isNotEmpty)
+                          Text(
+                            'Ver todo',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: _naranjaVivo,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
 
                     if (_misObjetos.isEmpty)
                       Center(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          padding: const EdgeInsets.symmetric(vertical: 50),
                           child: Column(
                             children: [
-                              Icon(
-                                Icons.inbox_outlined,
-                                size: 64,
-                                color: Colors.grey.shade300,
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: _naranjaVivo.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.inbox_outlined,
+                                  size: 60,
+                                  color: _naranjaVivo.withOpacity(0.5),
+                                ),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 14),
                               Text(
                                 'No tienes objetos registrados',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey.shade600,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      color: Colors.grey.shade600,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Crea tu primer objeto arriba',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.grey.shade500,
+                                    ),
                               ),
                             ],
                           ),
@@ -232,111 +251,162 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemCount: _misObjetos.length,
                         itemBuilder: (context, index) {
                           final objeto = _misObjetos[index];
-                          return Card(
-                            elevation: 1,
-                            margin: const EdgeInsets.only(bottom: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: const Color(0xFFE8E8E8),
-                                  width: 1,
-                                ),
-                              ),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                leading: Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: _naranjaClaro.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.backpack,
-                                      color: _naranjaClaro,
-                                      size: 22,
-                                    ),
-                                  ),
-                                ),
-                                title: Text(
-                                  objeto.nombre,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
-                                    color: Color(0xFF1F1F1F),
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  objeto.descripcion ?? 'Sin descripción',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF888888),
-                                  ),
-                                ),
-                                trailing: IconButton(
-                                  icon: Icon(
-                                    Icons.qr_code_2,
-                                    color: _naranjaClaro,
-                                    size: 22,
-                                  ),
-                                  onPressed: () => _verCodigoQR(objeto),
-                                  tooltip: 'Ver código QR',
-                                ),
-                                onTap: () => _verCodigoQR(objeto),
-                              ),
-                            ),
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 14),
+                            child: _buildObjetoCard(objeto),
                           );
                         },
                       ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
                   ],
                 ),
               ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _irARegistroObjeto,
-        backgroundColor: _naranjaClaro,
+        backgroundColor: _naranjaVivo,
         icon: const Icon(Icons.add),
         label: const Text('Nuevo Objeto'),
         foregroundColor: Colors.white,
-        elevation: 4,
+        elevation: 12,
+        extendedPadding: const EdgeInsets.symmetric(horizontal: 20),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onTabTapped,
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Historial',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              spreadRadius: 5,
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onTabTapped,
+          backgroundColor: Colors.white,
+          type: BottomNavigationBarType.fixed,
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined, size: 26),
+              activeIcon: Icon(Icons.home, size: 26),
+              label: 'Inicio',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history_outlined, size: 26),
+              activeIcon: Icon(Icons.history, size: 26),
+              label: 'Historial',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outlined, size: 26),
+              activeIcon: Icon(Icons.person, size: 26),
+              label: 'Perfil',
+            ),
+          ],
+          selectedItemColor: _naranjaVivo,
+          unselectedItemColor: Colors.grey.shade400,
+          selectedLabelStyle: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: _naranjaVivo,
+              ),
+          unselectedLabelStyle: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade400,
+              ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildObjetoCard(Objeto objeto) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        color: Colors.white,
+        border: Border.all(
+          color: const Color(0xFFE8E8E8),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            spreadRadius: 2,
           ),
         ],
-        selectedItemColor: _naranjaClaro,
-        unselectedItemColor: Color(0xFFB8B8B8),
-        iconSize: 24,
-        showUnselectedLabels: true,
-        selectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _verCodigoQR(objeto),
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: _naranjaVivo.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      colors: [
+                        _naranjaVivo.withOpacity(0.15),
+                        _naranjaNaranja.withOpacity(0.08),
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.backpack_outlined,
+                      color: _naranjaVivo,
+                      size: 26,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        objeto.nombre,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1F1F1F),
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        objeto.descripcion ?? 'Sin descripción',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w400,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: _naranjaVivo.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.qr_code_2,
+                    color: _naranjaVivo,
+                    size: 24,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -348,88 +418,92 @@ class _HomeScreenState extends State<HomeScreen> {
     required String descripcion,
     required VoidCallback onTap,
   }) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      shadowColor: _naranjaClaro.withOpacity(0.3),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white,
-                _blanco.withOpacity(0.98),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: _naranjaClaro.withOpacity(0.2),
-              width: 1,
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            _naranjaVivo,
+            _naranjaNaranja,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _naranjaVivo.withOpacity(0.25),
+            blurRadius: 20,
+            spreadRadius: 5,
+            offset: const Offset(0, 8),
           ),
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: _naranjaClaro,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _naranjaClaro.withOpacity(0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Row(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 2,
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 28,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      icon,
+                      color: Colors.white,
+                      size: 32,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      titulo,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1F1F1F),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        titulo,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                            ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      descripcion,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF888888),
+                      const SizedBox(height: 6),
+                      Text(
+                        descripcion,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.white.withOpacity(0.9),
+                              fontWeight: FontWeight.w500,
+                            ),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: _naranjaClaro.withOpacity(0.5),
-              ),
-            ],
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -3,7 +3,9 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 class AdminDetalleEscaneoScreen extends StatelessWidget {
   final Map<String, dynamic> escaneo;
-  static const Color _naranjaClaro = Color(0xFF5B7FFF);
+  static const Color _naranjaVivo = Color(0xFFFF6B00);
+  static const Color _naranjaNaranja = Color(0xFFFF8C00);
+  static const Color _blanco = Color(0xFFFAFAFA);
 
   const AdminDetalleEscaneoScreen({Key? key, required this.escaneo}) : super(key: key);
 
@@ -11,65 +13,82 @@ class AdminDetalleEscaneoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final fecha = _formatearFecha(escaneo['fecha_hora']?.toString() ?? '');
     final nombreCompleto = '${escaneo['alumno'] ?? ''} ${escaneo['apellido'] ?? ''}'.trim();
+    final esEntrada = escaneo['tipo_evento'] == 'ENTRADA';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: _blanco,
       appBar: AppBar(
         title: const Text('Detalle del Escaneo'),
-        backgroundColor: _naranjaClaro,
-        elevation: 0,
+        backgroundColor: _naranjaVivo,
+        elevation: 8,
+        shadowColor: _naranjaVivo.withOpacity(0.4),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // QR
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                border: Border.all(color: _naranjaClaro, width: 2),
-                borderRadius: BorderRadius.circular(16),
-                color: _naranjaClaro.withOpacity(0.05),
-              ),
-              child: Column(
-                children: [
-                  Text('CÓDIGO QR',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: _naranjaClaro, fontSize: 12)),
-                  const SizedBox(height: 16),
-                  QrImageView(
-                    data: escaneo['qr_code'] ?? 'sin-qr',
-                    version: QrVersions.auto,
-                    size: 200,
-                    backgroundColor: Colors.white,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(escaneo['qr_code'] ?? '',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                ],
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  border: Border.all(color: _naranjaVivo, width: 2.5),
+                  borderRadius: BorderRadius.circular(24),
+                  color: _naranjaVivo.withOpacity(0.08),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'CÓDIGO QR',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: _naranjaVivo,
+                            letterSpacing: 0.8,
+                          ),
+                    ),
+                    const SizedBox(height: 18),
+                    QrImageView(
+                      data: escaneo['qr_code'] ?? 'sin-qr',
+                      version: QrVersions.auto,
+                      size: 200,
+                      backgroundColor: Colors.white,
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      escaneo['qr_code'] ?? '',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w400,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
             // Info del objeto
-            _buildInfoCard('Objeto', [
-              _buildInfoRow(Icons.backpack, 'Nombre', escaneo['objeto'] ?? 'Sin nombre'),
+            _buildInfoCard(context, 'Objeto', [
+              _buildInfoRow(context, Icons.backpack_outlined, 'Nombre', escaneo['objeto'] ?? 'Sin nombre'),
               _buildInfoRow(
-                escaneo['tipo_evento'] == 'ENTRADA' ? Icons.login : Icons.logout,
+                context,
+                esEntrada ? Icons.login_outlined : Icons.logout_outlined,
                 'Tipo',
                 escaneo['tipo_evento'] ?? 'ENTRADA',
               ),
-              _buildInfoRow(Icons.location_on, 'Ubicación', escaneo['ubicacion'] ?? 'Sin ubicación'),
-              _buildInfoRow(Icons.devices, 'Dispositivo', escaneo['dispositivo'] ?? 'Desconocido'),
-              _buildInfoRow(Icons.access_time, 'Fecha y hora', fecha),
+              _buildInfoRow(context, Icons.location_on_outlined, 'Ubicación', escaneo['ubicacion'] ?? 'Sin ubicación'),
+              _buildInfoRow(context, Icons.devices_outlined, 'Dispositivo', escaneo['dispositivo'] ?? 'Desconocido'),
+              _buildInfoRow(context, Icons.access_time_outlined, 'Fecha y hora', fecha),
             ]),
             const SizedBox(height: 20),
 
             // Info del alumno
-            _buildInfoCard('Alumno', [
-              _buildInfoRow(Icons.person, 'Nombre completo', nombreCompleto.isEmpty ? 'Desconocido' : nombreCompleto),
-              _buildInfoRow(Icons.badge, 'Código estudiante', escaneo['codigo_estudiante'] ?? 'Sin código'),
-              _buildInfoRow(Icons.phone, 'Teléfono', escaneo['telefono'] ?? 'Sin teléfono'),
+            _buildInfoCard(context, 'Alumno', [
+              _buildInfoRow(context, Icons.person_outline, 'Nombre completo', nombreCompleto.isEmpty ? 'Desconocido' : nombreCompleto),
+              _buildInfoRow(context, Icons.badge_outlined, 'Código estudiante', escaneo['codigo_estudiante'] ?? 'Sin código'),
+              _buildInfoRow(context, Icons.phone_outlined, 'Teléfono', escaneo['telefono'] ?? 'Sin teléfono'),
             ]),
           ],
         ),
@@ -77,20 +96,41 @@ class AdminDetalleEscaneoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(String titulo, List<Widget> children) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      shadowColor: _naranjaClaro.withOpacity(0.2),
+  Widget _buildInfoCard(BuildContext context, String titulo, List<Widget> children) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        border: Border.all(
+          color: const Color(0xFFE8E8E8),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(titulo.toUpperCase(),
-                style: TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.bold, color: _naranjaClaro)),
-            Divider(color: _naranjaClaro.withOpacity(0.2), height: 20),
+            Text(
+              titulo.toUpperCase(),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: _naranjaVivo,
+                    letterSpacing: 0.8,
+                  ),
+            ),
+            Divider(
+              color: _naranjaVivo.withOpacity(0.15),
+              height: 18,
+            ),
             ...children,
           ],
         ),
@@ -98,18 +138,38 @@ class AdminDetalleEscaneoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(BuildContext context, IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Icon(icon, color: _naranjaClaro, size: 22),
-          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: _naranjaVivo.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: _naranjaVivo, size: 20),
+          ),
+          const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1F1F1F),
+                    ),
+              ),
             ],
           ),
         ],

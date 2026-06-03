@@ -20,7 +20,8 @@ class _QrScanScreenState extends State<QrScanScreen> {
   final _apiService = ApiService();
   MobileScannerController? _controller;
   bool _isProcessing = false;
-  static const Color _naranjaClaro = Color(0xFF5B7FFF);
+  static const Color _naranjaVivo = Color(0xFFFF6B00);
+  static const Color _naranjaNaranja = Color(0xFFFF8C00);
 
   @override
   void initState() {
@@ -58,29 +59,43 @@ class _QrScanScreenState extends State<QrScanScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Objeto Encontrado', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Nombre: ${objeto.nombre}', style: const TextStyle(fontSize: 14)),
-            if (objeto.descripcion != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text('Descripción: ${objeto.descripcion}', style: const TextStyle(fontSize: 14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: Text(
+          'Objeto Encontrado',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: _naranjaVivo,
               ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Text('QR: ${objeto.qrCode}',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'monospace')),
-            ),
-          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDialogInfoRow('📦 Nombre', objeto.nombre),
+              if (objeto.descripcion != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: _buildDialogInfoRow('📝 Descripción', objeto.descripcion!),
+                ),
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: _buildDialogInfoRow('QR', objeto.qrCode),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(
+              'Cancelar',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.grey.shade600,
+                  ),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -88,13 +103,45 @@ class _QrScanScreenState extends State<QrScanScreen> {
               _registrarEscaneo(objeto, qrCode);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: _naranjaClaro,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              backgroundColor: _naranjaVivo,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 4,
             ),
-            child: const Text('Registrar Escaneo', style: TextStyle(color: Colors.white)),
+            child: Text(
+              'Registrar Escaneo',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDialogInfoRow(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: _naranjaVivo,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1F1F1F),
+              ),
+        ),
+      ],
     );
   }
 
@@ -109,46 +156,49 @@ class _QrScanScreenState extends State<QrScanScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Registrar Escaneo', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _ubicacionController,
-              decoration: InputDecoration(
-                labelText: 'Ubicación',
-                hintText: 'Ej: Almacén 1',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: _naranjaClaro, width: 2),
-                ),
-                prefixIcon: const Icon(Icons.location_on),
-                prefixIconColor: _naranjaClaro,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: Text(
+          'Registrar Escaneo',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: _naranjaVivo,
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _dispositivoController,
-              decoration: InputDecoration(
-                labelText: 'Dispositivo',
-                hintText: 'Ej: Móvil',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: _naranjaClaro, width: 2),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _ubicacionController,
+                decoration: InputDecoration(
+                  labelText: 'Ubicación',
+                  hintText: 'Ej: Almacén 1',
+                  prefixIcon: const Icon(Icons.location_on_outlined, color: _naranjaVivo),
                 ),
-                prefixIcon: const Icon(Icons.devices),
-                prefixIconColor: _naranjaClaro,
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              TextField(
+                controller: _dispositivoController,
+                decoration: InputDecoration(
+                  labelText: 'Dispositivo',
+                  hintText: 'Ej: Móvil',
+                  prefixIcon: const Icon(Icons.devices_outlined, color: _naranjaVivo),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(
+              'Cancelar',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.grey.shade600,
+                  ),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -170,10 +220,17 @@ class _QrScanScreenState extends State<QrScanScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: _naranjaClaro,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              backgroundColor: _naranjaVivo,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 4,
             ),
-            child: const Text('Guardar', style: TextStyle(color: Colors.white)),
+            child: Text(
+              'Guardar',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
           ),
         ],
       ),
@@ -184,8 +241,11 @@ class _QrScanScreenState extends State<QrScanScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.green.shade500,
         duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -194,8 +254,11 @@ class _QrScanScreenState extends State<QrScanScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.red.shade500,
         duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -205,8 +268,9 @@ class _QrScanScreenState extends State<QrScanScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Escanear QR'),
-        backgroundColor: _naranjaClaro,
-        elevation: 0,
+        backgroundColor: _naranjaVivo,
+        elevation: 8,
+        shadowColor: _naranjaVivo.withOpacity(0.4),
       ),
       body: Stack(
         children: [
@@ -225,22 +289,30 @@ class _QrScanScreenState extends State<QrScanScreen> {
             },
           ),
           Positioned(
-            bottom: 30,
-            left: 0,
-            right: 0,
+            bottom: 40,
+            left: 16,
+            right: 16,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.all(15),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _naranjaVivo, width: 1.5),
                 ),
-                child: const Text(
-                  'Apunta la cámara al código QR',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.qr_code_2, color: _naranjaVivo, size: 24),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Apunta la cámara al código QR',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ],
                 ),
               ),
             ),
