@@ -12,19 +12,23 @@ def obtener_perfil(token: dict = Depends(TokenManager.verify_token_from_header))
         usuario = UsuarioModel.obtener_perfil(usuario_id)
         if not usuario:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+        # FIX: usar claves de dict en lugar de índices numéricos
         return {
-            "id": usuario[0],
-            "nombre": usuario[1],
-            "apellido": usuario[2],
-            "correo": usuario[3],
-            "telefono": usuario[4],
-            "codigo_estudiante": usuario[5],
-            "rol": usuario[6],
-            "foto_perfil": usuario[7]
+            "id": usuario["id"],
+            "nombre": usuario["nombre"],
+            "apellido": usuario["apellido"],
+            "correo": usuario["correo"],
+            "telefono": usuario["telefono"],
+            "codigo_estudiante": usuario["codigo_estudiante"],
+            "rol": usuario["rol"],
+            "foto_perfil": usuario["foto_perfil"]
         }
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/perfil", response_model=dict)
@@ -43,19 +47,23 @@ def actualizar_perfil(
         )
         if not resultado:
             raise HTTPException(status_code=400, detail="No hay datos para actualizar")
+
+        # FIX: usar claves de dict
         return {
-            "id": resultado[0],
-            "nombre": resultado[1],
-            "apellido": resultado[2],
-            "correo": resultado[3],
-            "telefono": resultado[4],
-            "codigo_estudiante": resultado[5],
-            "rol": resultado[6],
-            "foto_perfil": resultado[7]
+            "id": resultado["id"],
+            "nombre": resultado["nombre"],
+            "apellido": resultado["apellido"],
+            "correo": resultado["correo"],
+            "telefono": resultado["telefono"],
+            "codigo_estudiante": resultado["codigo_estudiante"],
+            "rol": resultado["rol"],
+            "foto_perfil": resultado["foto_perfil"]
         }
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/cambiar-contrasena", response_model=dict)
@@ -76,7 +84,6 @@ def cambiar_contrasena(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
 @router.get("/alumnos", response_model=list)
 def obtener_alumnos(token: dict = Depends(TokenManager.verify_token_from_header)):
     try:
@@ -88,8 +95,9 @@ def obtener_alumnos(token: dict = Depends(TokenManager.verify_token_from_header)
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/alumnos/{usuario_id}/historial", response_model=list)
 def obtener_historial_alumno(
@@ -105,4 +113,6 @@ def obtener_historial_alumno(
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))

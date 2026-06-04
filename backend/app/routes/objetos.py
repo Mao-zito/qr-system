@@ -18,21 +18,26 @@ def obtener_mis_objetos(authorization: str = Header(None)):
         usuario_id = int(payload.get("sub"))
         if not usuario_id:
             raise HTTPException(status_code=401, detail="Usuario no identificado")
+
         objetos = ObjetoModel.obtener_objetos_usuario(usuario_id)
-        resultado = []
-        for obj in objetos:
-            resultado.append({
-                "id": obj[0],
-                "nombre": obj[1],
-                "qr_code": obj[2],
-                "descripcion": obj[3],
-                "categoria": obj[4],
-                "fecha_creacion": obj[5]
-            })
-        return resultado
+
+        # FIX: RealDictCursor devuelve dicts, no tuplas
+        return [
+            {
+                "id": obj["id"],
+                "nombre": obj["nombre"],
+                "qr_code": obj["qr_code"],
+                "descripcion": obj["descripcion"],
+                "categoria": obj["categoria"],
+                "fecha_creacion": str(obj["fecha_creacion"]) if obj["fecha_creacion"] else None
+            }
+            for obj in objetos
+        ]
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/qr/{qr_code}", response_model=dict)
@@ -41,18 +46,22 @@ def buscar_por_qr(qr_code: str):
         objeto = ObjetoModel.obtener_por_qr(qr_code)
         if not objeto:
             raise HTTPException(status_code=404, detail="Objeto no encontrado")
-        return objeto
+        return dict(objeto)
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/", response_model=list)
 def obtener_objetos():
     try:
         objetos = ObjetoModel.obtener_todos()
-        return objetos
+        return [dict(o) for o in objetos]
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/", response_model=dict)
@@ -67,6 +76,7 @@ def crear_objeto(objeto_data: ObjetoCreate, authorization: str = Header(None)):
         usuario_id = int(payload.get("sub"))
         if not usuario_id:
             raise HTTPException(status_code=401, detail="Usuario no identificado")
+
         objeto = ObjetoModel.crear_objeto(
             nombre=objeto_data.nombre,
             categoria_id=objeto_data.categoria_id,
@@ -85,7 +95,6 @@ def crear_objeto(objeto_data: ObjetoCreate, authorization: str = Header(None)):
         import traceback
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
-         
 
 @router.get("/{objeto_id}", response_model=dict)
 def obtener_objeto(objeto_id: int):
@@ -93,8 +102,10 @@ def obtener_objeto(objeto_id: int):
         objeto = ObjetoModel.obtener_por_id(objeto_id)
         if not objeto:
             raise HTTPException(status_code=404, detail="Objeto no encontrado")
-        return objeto
+        return dict(objeto)
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
