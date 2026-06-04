@@ -1,6 +1,6 @@
 class ApiConstants {
   static const String baseUrl =
-      'https://qr-system-production-a93f.up.railway.app';
+            'https://qr-system-production-666a.up.railway.app';
 
   static const String loginEndpoint = '/auth/login';
   static const String registerEndpoint = '/auth/registro';
