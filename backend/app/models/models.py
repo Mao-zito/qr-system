@@ -57,6 +57,7 @@ class UsuarioModel:
 
         except Exception as e:
             conn.rollback()
+            print("ERROR REAL:", e)
             raise e
 
         finally:
