@@ -8,14 +8,17 @@ class Database:
     @classmethod
     def connect(cls):
         if cls._connection is None:
-            DATABASE_URL = os.getenv("DATABASE_URL")
-
-            print("DATABASE_URL:", DATABASE_URL)
-
             cls._connection = psycopg2.connect(
-                DATABASE_URL,
-                cursor_factory=RealDictCursor
+                host=os.getenv("DB_HOST"),
+                database=os.getenv("DB_NAME"),
+                user=os.getenv("DB_USER"),
+                password=os.getenv("DB_PASSWORD"),
+                port=os.getenv("DB_PORT"),
+                cursor_factory=RealDictCursor,
+                sslmode="require"
             )
+
+            print("✅ Conectado a la base de datos")
 
         return cls._connection
 
