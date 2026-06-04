@@ -25,3 +25,7 @@ class Database:
 def get_cursor():
     conn = Database.connect()
     return conn.cursor(), conn
+
+def get_cursor_simple():
+    conn = Database.connect()
+    return conn.cursor()
