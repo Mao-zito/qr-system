@@ -44,7 +44,7 @@ class UsuarioModel:
                 rol
             ))
 
-            usuario_id = cursor.fetchone()[0]
+            usuario_id = cursor.fetchone()["id"]
             conn.commit()
 
             return {
