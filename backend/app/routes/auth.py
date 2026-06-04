@@ -1,5 +1,3 @@
-# Backend routes - Autenticación
-
 from fastapi import APIRouter, HTTPException
 from app.schemas.schemas import LoginRequest, LoginResponse, UsuarioCreate
 from app.models.models import UsuarioModel
@@ -16,13 +14,19 @@ def login(datos: LoginRequest):
     if not usuario:
         raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos")
 
-    usuario_id, nombre, correo, contraseña_hash, rol = usuario
+    # FIX 1: RealDictCursor devuelve dict, no tupla
+    usuario_id      = usuario["id"]
+    nombre          = usuario["nombre"]
+    correo          = usuario["correo"]
+    contraseña_hash = usuario["contrasena"]
+    rol             = usuario["rol"]
 
-    print("HASH DESDE DB:", repr(contraseña_hash))
-
-    # 🔥 FIX CRÍTICO: evitar crash por datos corruptos
-    if not contraseña_hash:
-        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+    # FIX 2: detectar contraseña en texto plano antes de que bcrypt crashee
+    if not contraseña_hash or not contraseña_hash.startswith("$2b$"):
+        raise HTTPException(
+            status_code=401,
+            detail="Credenciales inválidas. Vuelve a registrarte."
+        )
 
     if not PasswordHash.verify_password(datos.contrasena, contraseña_hash):
         raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos")
