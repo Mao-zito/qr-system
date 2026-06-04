@@ -56,8 +56,11 @@ class UsuarioModel:
             }
 
         except Exception as e:
-            conn.rollback()
-            print("ERROR REAL:", e)
+            if conn:
+                conn.rollback()
+                import traceback
+                print("Error real completo:")
+                print(traceback.format_exc())
             raise e
 
         finally:
