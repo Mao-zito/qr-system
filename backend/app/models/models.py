@@ -1,7 +1,6 @@
-from app.database import get_cursor, get_cursor_simple, Database
+from app.database import Database
 from app.utils.auth import PasswordHash
 from app.utils.qr_manager import QRGenerator
-from datetime import datetime
 
 
 class UsuarioModel:
@@ -16,8 +15,9 @@ class UsuarioModel:
         codigo_estudiante: str,
         rol: str = "usuario"
     ):
-        cursor = get_cursor_simple()
+        # FIX 1: una sola conexión, cursor de la misma conexión
         conn = Database.get_connection()
+        cursor = conn.cursor()
 
         hash_pwd = PasswordHash.hash_password(contrasena)
 
@@ -33,7 +33,7 @@ class UsuarioModel:
                     rol
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
-                RETURNING id
+                RETURNING id, nombre, apellido, correo, rol
             """, (
                 nombre,
                 apellido,
@@ -44,23 +44,22 @@ class UsuarioModel:
                 rol
             ))
 
-            usuario_id = cursor.fetchone()[0]
+            row = cursor.fetchone()
             conn.commit()
 
             return {
-                "id": usuario_id,
-                "nombre": nombre,
-                "apellido": apellido,
-                "correo": correo,
-                "rol": rol
+                "id": row["id"],
+                "nombre": row["nombre"],
+                "apellido": row["apellido"],
+                "correo": row["correo"],
+                "rol": row["rol"]
             }
 
         except Exception as e:
-            if conn:
-                conn.rollback()
-                import traceback
-                print("Error real completo:")
-                print(traceback.format_exc())
+            conn.rollback()
+            import traceback
+            print("Error real completo:")
+            print(traceback.format_exc())
             raise e
 
         finally:
@@ -68,7 +67,8 @@ class UsuarioModel:
 
     @staticmethod
     def obtener_por_correo(correo: str):
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute("""
             SELECT id, nombre, correo, contrasena, rol
@@ -82,7 +82,8 @@ class UsuarioModel:
 
     @staticmethod
     def obtener_por_id(usuario_id: int):
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute("""
             SELECT id, nombre, correo, rol
@@ -96,7 +97,8 @@ class UsuarioModel:
 
     @staticmethod
     def obtener_perfil(usuario_id: int):
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute("""
             SELECT
@@ -124,8 +126,8 @@ class UsuarioModel:
         telefono: str = None,
         foto_perfil: str = None
     ):
-        cursor = get_cursor_simple()
         conn = Database.get_connection()
+        cursor = conn.cursor()
 
         try:
             campos = []
@@ -184,8 +186,8 @@ class UsuarioModel:
         contrasena_actual: str,
         contrasena_nueva: str
     ):
-        cursor = get_cursor_simple()
         conn = Database.get_connection()
+        cursor = conn.cursor()
 
         try:
             cursor.execute("""
@@ -199,7 +201,13 @@ class UsuarioModel:
             if not resultado:
                 raise Exception("Usuario no encontrado")
 
-            if not PasswordHash.verify_password(contrasena_actual, resultado[0]):
+            hash_guardado = resultado["contrasena"]
+
+            # FIX 3: validar que el hash sea bcrypt antes de verificar
+            if not hash_guardado or not hash_guardado.startswith("$2b$"):
+                raise Exception("Hash inválido en BD. Re-registra el usuario.")
+
+            if not PasswordHash.verify_password(contrasena_actual, hash_guardado):
                 raise Exception("Contraseña actual incorrecta")
 
             nuevo_hash = PasswordHash.hash_password(contrasena_nueva)
@@ -220,10 +228,11 @@ class UsuarioModel:
         finally:
             cursor.close()
 
-
     @staticmethod
     def obtener_alumnos_con_estado():
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
         cursor.execute("""
             SELECT 
                 u.id,
@@ -245,26 +254,31 @@ class UsuarioModel:
             WHERE u.rol != 'admin'
             ORDER BY u.nombre
         """)
+
         datos = cursor.fetchall()
         cursor.close()
-        resultado = []
-        for fila in datos:
-            resultado.append({
-                "id": fila[0],
-                "nombre": fila[1],
-                "apellido": fila[2],
-                "codigo_estudiante": fila[3],
-                "telefono": fila[4],
-                "correo": fila[5],
-                "foto_perfil": fila[6],
-                "ultimo_evento": fila[7],
-                "ultima_fecha": str(fila[8]) if fila[8] else None
-            })
-        return resultado
+
+        # FIX 4: usar claves de dict en lugar de índices numéricos
+        return [
+            {
+                "id": fila["id"],
+                "nombre": fila["nombre"],
+                "apellido": fila["apellido"],
+                "codigo_estudiante": fila["codigo_estudiante"],
+                "telefono": fila["telefono"],
+                "correo": fila["correo"],
+                "foto_perfil": fila["foto_perfil"],
+                "ultimo_evento": fila["ultimo_evento"],
+                "ultima_fecha": str(fila["ultima_fecha"]) if fila["ultima_fecha"] else None
+            }
+            for fila in datos
+        ]
 
     @staticmethod
     def obtener_historial_alumno(usuario_id: int, limite: int = 50):
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
         cursor.execute("""
             SELECT e.id, o.nombre, o.qr_code, e.ubicacion, 
                    e.dispositivo, e.fecha_hora, e.tipo_evento
@@ -274,20 +288,23 @@ class UsuarioModel:
             ORDER BY e.fecha_hora DESC
             LIMIT %s
         """, (usuario_id, limite))
+
         datos = cursor.fetchall()
         cursor.close()
-        resultado = []
-        for fila in datos:
-            resultado.append({
-                "id": fila[0],
-                "objeto": fila[1],
-                "qr_code": fila[2],
-                "ubicacion": fila[3],
-                "dispositivo": fila[4],
-                "fecha_hora": str(fila[5]),
-                "tipo_evento": fila[6]
-            })
-        return resultado
+
+        # FIX 4: usar claves de dict
+        return [
+            {
+                "id": fila["id"],
+                "objeto": fila["nombre"],
+                "qr_code": fila["qr_code"],
+                "ubicacion": fila["ubicacion"],
+                "dispositivo": fila["dispositivo"],
+                "fecha_hora": str(fila["fecha_hora"]),
+                "tipo_evento": fila["tipo_evento"]
+            }
+            for fila in datos
+        ]
 
 
 class ObjetoModel:
@@ -299,8 +316,8 @@ class ObjetoModel:
         usuario_id: int,
         descripcion: str = None
     ):
-        cursor = get_cursor_simple()
         conn = Database.get_connection()
+        cursor = conn.cursor()
 
         qr_code = QRGenerator.generate_unique_qr_code()
 
@@ -317,7 +334,7 @@ class ObjetoModel:
                 RETURNING id
             """, (nombre, qr_code, categoria_id, usuario_id, descripcion))
 
-            objeto_id = cursor.fetchone()[0]
+            objeto_id = cursor.fetchone()["id"]
             conn.commit()
 
             return {
@@ -335,7 +352,8 @@ class ObjetoModel:
 
     @staticmethod
     def obtener_todos():
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute("""
             SELECT
@@ -356,19 +374,20 @@ class ObjetoModel:
 
         return [
             {
-                "id": fila[0],
-                "nombre": fila[1],
-                "qr_code": fila[2],
-                "descripcion": fila[3],
-                "categoria": fila[4],
-                "dueno": fila[5]
+                "id": fila["id"],
+                "nombre": fila["nombre"],
+                "qr_code": fila["qr_code"],
+                "descripcion": fila["descripcion"],
+                "categoria": fila["categoria"],
+                "dueno": fila["dueno"]
             }
             for fila in datos
         ]
 
     @staticmethod
     def obtener_por_qr(qr_code: str):
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute("""
             SELECT
@@ -391,7 +410,8 @@ class ObjetoModel:
 
     @staticmethod
     def obtener_por_id(objeto_id: int):
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute("""
             SELECT
@@ -414,7 +434,8 @@ class ObjetoModel:
 
     @staticmethod
     def obtener_objetos_usuario(usuario_id: int):
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute("""
             SELECT
@@ -445,15 +466,15 @@ class EscaneoModel:
         dispositivo: str = "ESP32",
         usuario_id: int = None
     ):
-        cursor = get_cursor_simple()
         conn = Database.get_connection()
+        cursor = conn.cursor()
 
         try:
             if usuario_id is None:
                 cursor.execute("SELECT usuario_id FROM objetos WHERE id = %s", (objeto_id,))
                 resultado = cursor.fetchone()
                 if resultado:
-                    usuario_id = resultado[0]
+                    usuario_id = resultado["usuario_id"]
                 else:
                     raise Exception("Objeto no encontrado")
 
@@ -465,7 +486,7 @@ class EscaneoModel:
             """, (objeto_id,))
             ultimo = cursor.fetchone()
 
-            if ultimo is None or ultimo[0] == 'SALIDA':
+            if ultimo is None or ultimo["tipo_evento"] == 'SALIDA':
                 tipo_evento = 'ENTRADA'
             else:
                 tipo_evento = 'SALIDA'
@@ -476,7 +497,7 @@ class EscaneoModel:
                 RETURNING id
             """, (objeto_id, ubicacion, dispositivo, usuario_id, tipo_evento))
 
-            escaneo_id = cursor.fetchone()[0]
+            escaneo_id = cursor.fetchone()["id"]
             conn.commit()
             return {"id": escaneo_id, "tipo_evento": tipo_evento}
 
@@ -489,7 +510,8 @@ class EscaneoModel:
 
     @staticmethod
     def obtener_historial(limite: int = 100):
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute("""
             SELECT
@@ -514,19 +536,20 @@ class EscaneoModel:
         datos = cursor.fetchall()
         cursor.close()
 
+        # FIX 4: usar claves de dict
         return [
             {
-                "id": fila[0],
-                "objeto": fila[1],
-                "qr_code": fila[2],
-                "ubicacion": fila[3],
-                "dispositivo": fila[4],
-                "fecha_hora": str(fila[5]),
-                "alumno": fila[6],
-                "apellido": fila[7],
-                "codigo_estudiante": fila[8],
-                "telefono": fila[9],
-                "tipo_evento": fila[10]
+                "id": fila["id"],
+                "objeto": fila["nombre"],
+                "qr_code": fila["qr_code"],
+                "ubicacion": fila["ubicacion"],
+                "dispositivo": fila["dispositivo"],
+                "fecha_hora": str(fila["fecha_hora"]),
+                "alumno": fila["alumno"],
+                "apellido": fila["apellido"],
+                "codigo_estudiante": fila["codigo_estudiante"],
+                "telefono": fila["telefono"],
+                "tipo_evento": fila["tipo_evento"]
             }
             for fila in datos
         ]
@@ -536,7 +559,8 @@ class EscaneoModel:
         objeto_id: int,
         limite: int = 50
     ):
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute("""
             SELECT
@@ -559,7 +583,8 @@ class EscaneoModel:
         usuario_id: int,
         limite: int = 100
     ):
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute("""
             SELECT
@@ -586,16 +611,17 @@ class EstadisticasModel:
 
     @staticmethod
     def obtener_estadisticas():
-        cursor = get_cursor_simple()
+        conn = Database.get_connection()
+        cursor = conn.cursor()
 
-        cursor.execute("SELECT COUNT(*) FROM objetos")
-        total_objetos = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) as total FROM objetos")
+        total_objetos = cursor.fetchone()["total"]
 
-        cursor.execute("SELECT COUNT(*) FROM escaneos")
-        total_escaneos = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) as total FROM escaneos")
+        total_escaneos = cursor.fetchone()["total"]
 
-        cursor.execute("SELECT COUNT(*) FROM categorias")
-        total_categorias = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) as total FROM categorias")
+        total_categorias = cursor.fetchone()["total"]
 
         cursor.execute("""
             SELECT
@@ -605,7 +631,7 @@ class EstadisticasModel:
             LEFT JOIN objetos o ON c.id = o.categoria_id
             GROUP BY c.id, c.nombre
         """)
-        objetos_por_categoria = {row[0]: row[1] for row in cursor.fetchall()}
+        objetos_por_categoria = {row["nombre"]: row["cantidad"] for row in cursor.fetchall()}
 
         cursor.execute("""
             SELECT
@@ -614,21 +640,21 @@ class EstadisticasModel:
             FROM escaneos
             GROUP BY dispositivo
         """)
-        escaneos_por_dispositivo = {row[0]: row[1] for row in cursor.fetchall()}
+        escaneos_por_dispositivo = {row["dispositivo"]: row["cantidad"] for row in cursor.fetchall()}
 
         cursor.execute("""
-            SELECT COUNT(*)
+            SELECT COUNT(*) as total
             FROM escaneos
             WHERE fecha_hora >= NOW() - INTERVAL '1 day'
         """)
-        escaneos_ultimo_dia = cursor.fetchone()[0]
+        escaneos_ultimo_dia = cursor.fetchone()["total"]
 
         cursor.execute("""
-            SELECT COUNT(*)
+            SELECT COUNT(*) as total
             FROM escaneos
             WHERE fecha_hora >= NOW() - INTERVAL '7 days'
         """)
-        escaneos_ultima_semana = cursor.fetchone()[0]
+        escaneos_ultima_semana = cursor.fetchone()["total"]
 
         cursor.close()
 

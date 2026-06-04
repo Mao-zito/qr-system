@@ -24,9 +24,18 @@ class Database:
 
     @classmethod
     def get_connection(cls):
-        if cls._connection is None:
+        try:
+            # Verifica si la conexión está viva con un ping
+            if cls._connection is None or cls._connection.closed != 0:
+                return cls.connect()
+
+            # Intenta un ping real — si falla, reconecta
+            cls._connection.cursor().execute("SELECT 1")
+            return cls._connection
+
+        except Exception:
+            print("Conexión caída, reconectando...")
             return cls.connect()
-        return cls._connection
 
 
 def get_cursor():
