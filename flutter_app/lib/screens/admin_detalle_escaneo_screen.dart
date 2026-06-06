@@ -24,7 +24,7 @@ class AdminDetalleEscaneoScreen extends StatelessWidget {
         shadowColor: _naranjaVivo.withOpacity(0.4),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).padding.bottom + 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -164,7 +164,8 @@ class AdminDetalleEscaneoScreen extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                value,
+                value, overflow: TextOverflow.ellipsis, 
+                maxLines: 2,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1F1F1F),

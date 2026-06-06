@@ -30,15 +30,15 @@ class _PerfilScreenState extends State<PerfilScreen> {
   final _contrasenaNuevaController = TextEditingController();
   final _confirmarContrasenaController = TextEditingController();
 
+  static const Color _naranjaVivo = Color(0xFFFF6B00);
+  static const Color _naranjaNaranja = Color(0xFFFF8C00);
+  static const Color _blanco = Color(0xFFFAFAFA);
+
   @override
   void initState() {
     super.initState();
     _cargarPerfil();
   }
-
-  static const Color _naranjaVivo = Color(0xFFFF6B00);
-  static const Color _naranjaNaranja = Color(0xFFFF8C00);
-  static const Color _blanco = Color(0xFFFAFAFA);
 
   @override
   void dispose() {
@@ -73,10 +73,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
     if (imagen == null) return;
 
     final bytes = await File(imagen.path).readAsBytes();
-    final base64 = base64Encode(bytes);
+    final base64Str = base64Encode(bytes);
 
     setState(() => _guardando = true);
-    final result = await _apiService.actualizarPerfil(fotoPerfil: base64);
+    final result = await _apiService.actualizarPerfil(fotoPerfil: base64Str);
     if (mounted) {
       setState(() => _guardando = false);
       if (result['success']) {
@@ -173,12 +173,25 @@ class _PerfilScreenState extends State<PerfilScreen> {
           left: 24,
           right: 24,
           top: 28,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          // ✅ respeta el teclado en el bottom sheet
+          bottom: MediaQuery.of(context).viewInsets.bottom + 32,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ✅ handle visual del bottom sheet
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
             Text(
               'Cambiar contraseña',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -193,34 +206,34 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     color: Colors.grey.shade600,
                   ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
             TextField(
               controller: _contrasenaActualController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Contraseña actual',
-                prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
+                prefixIcon: Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
               ),
               obscureText: true,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             TextField(
               controller: _contrasenaNuevaController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Nueva contraseña',
-                prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
+                prefixIcon: Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
               ),
               obscureText: true,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             TextField(
               controller: _confirmarContrasenaController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Confirmar nueva contraseña',
-                prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
+                prefixIcon: Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
               ),
               obscureText: true,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -250,8 +263,45 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
+  void _confirmarLogout() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Cerrar sesión',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          '¿Estás seguro de que deseas cerrar sesión?',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar', style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _logout();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text(
+              'Cerrar sesión',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // ✅ padding inferior del sistema (botones de navegación del celular)
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
       backgroundColor: _blanco,
       appBar: AppBar(
@@ -284,10 +334,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
               ),
             )
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.fromLTRB(
+                24, 24, 24,
+                // ✅ padding dinámico — respeta botones del sistema
+                bottomPadding + 32,
+              ),
               child: Column(
                 children: [
-                  // Foto de perfil
+                  // ── Foto de perfil ──────────────────────────────────────
                   Center(
                     child: Stack(
                       children: [
@@ -295,11 +349,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                _naranjaVivo,
-                                _naranjaNaranja,
-                              ],
+                            gradient: const LinearGradient(
+                              colors: [_naranjaVivo, _naranjaNaranja],
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -336,6 +387,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                               decoration: BoxDecoration(
                                 color: _naranjaVivo,
                                 shape: BoxShape.circle,
+                                border: Border.all(color: _blanco, width: 2),
                                 boxShadow: [
                                   BoxShadow(
                                     color: _naranjaVivo.withOpacity(0.3),
@@ -344,26 +396,25 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                   ),
                                 ],
                               ),
-                              child: const Icon(
-                                Icons.camera_alt,
-                                color: Colors.white,
-                                size: 20,
-                              ),
+                              child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 16),
+
+                  // Nombre y rol
                   Text(
                     '${_perfil!['nombre'] ?? ''} ${_perfil!['apellido'] ?? ''}'.trim(),
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w900,
                           color: const Color(0xFF1F1F1F),
                         ),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
@@ -379,9 +430,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           ),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 28),
 
-                  // Datos
+                  // ── Card información personal ────────────────────────────
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
@@ -414,9 +465,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                               Expanded(
                                 child: TextField(
                                   controller: _nombreController,
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     labelText: 'Nombre',
-                                    prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
+                                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
                                   ),
                                 ),
                               ),
@@ -424,9 +475,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                               Expanded(
                                 child: TextField(
                                   controller: _apellidoController,
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     labelText: 'Apellido',
-                                    prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
+                                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
                                   ),
                                 ),
                               ),
@@ -435,9 +486,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           const SizedBox(height: 16),
                           TextField(
                             controller: _telefonoController,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Teléfono',
-                              prefixIcon: const Icon(Icons.phone_outlined, color: Color(0xFFFF6B00)),
+                              prefixIcon: Icon(Icons.phone_outlined, color: Color(0xFFFF6B00)),
                             ),
                             keyboardType: TextInputType.phone,
                           ),
@@ -466,113 +517,68 @@ class _PerfilScreenState extends State<PerfilScreen> {
                             ),
                           ),
                         ] else ...[
-                          _buildInfoRow(
-                            Icons.person_outline,
-                            'Nombre completo',
-                            '${_perfil!['nombre'] ?? ''} ${_perfil!['apellido'] ?? ''}'.trim(),
-                          ),
-                          _buildInfoRow(
-                            Icons.email_outlined,
-                            'Correo',
-                            _perfil!['correo'] ?? '-',
-                          ),
-                          _buildInfoRow(
-                            Icons.phone_outlined,
-                            'Teléfono',
-                            _perfil!['telefono'] ?? 'Sin registrar',
-                          ),
-                          _buildInfoRow(
-                            Icons.badge_outlined,
-                            'Código estudiante',
-                            _perfil!['codigo_estudiante'] ?? 'Sin registrar',
-                          ),
+                          _buildInfoRow(Icons.person_outline, 'Nombre completo',
+                              '${_perfil!['nombre'] ?? ''} ${_perfil!['apellido'] ?? ''}'.trim()),
+                          _buildDivider(),
+                          _buildInfoRow(Icons.email_outlined, 'Correo', _perfil!['correo'] ?? '-'),
+                          _buildDivider(),
+                          _buildInfoRow(Icons.phone_outlined, 'Teléfono',
+                              _perfil!['telefono'] ?? 'Sin registrar'),
+                          _buildDivider(),
+                          _buildInfoRow(Icons.badge_outlined, 'Código estudiante',
+                              _perfil!['codigo_estudiante'] ?? 'Sin registrar'),
                         ],
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                  // Cambiar contraseña
+                  // ── Botón cambiar contraseña ─────────────────────────────
                   SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: OutlinedButton.icon(
                       onPressed: _mostrarCambiarContrasena,
                       icon: const Icon(Icons.lock_outline),
-                      label: const Text('Cambiar contraseña'),
+                      label: const Text(
+                        'Cambiar contraseña',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
                       style: OutlinedButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        side: const BorderSide(color: Color(0xFFFF6B00), width: 2),
-                        foregroundColor: const Color(0xFFFF6B00),
+                        side: const BorderSide(color: _naranjaVivo, width: 2),
+                        foregroundColor: _naranjaVivo,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
 
-                  // Cerrar sesión
+                  // ── Botón cerrar sesión ──────────────────────────────────
                   SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            title: Text(
-                              'Cerrar sesión',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                            content: Text(
-                              '¿Estás seguro de que deseas cerrar sesión?',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text(
-                                  'Cancelar',
-                                  style: TextStyle(fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  _logout();
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                ),
-                                child: const Text(
-                                  'Cerrar sesión',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                      onPressed: _confirmarLogout,
                       icon: const Icon(Icons.logout),
-                      label: const Text('Cerrar Sesión'),
+                      label: const Text(
+                        'Cerrar Sesión',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red.shade500,
                         foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        elevation: 0,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
     );
   }
+
+  Widget _buildDivider() => Divider(color: Colors.grey.shade100, height: 1, thickness: 1);
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
@@ -582,32 +588,35 @@ class _PerfilScreenState extends State<PerfilScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: _naranjaVivo.withOpacity(0.15),
+              color: _naranjaVivo.withOpacity(0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: _naranjaVivo, size: 20),
           ),
           const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1F1F1F),
-                    ),
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.grey.shade500,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                      ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1F1F1F),
+                      ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),

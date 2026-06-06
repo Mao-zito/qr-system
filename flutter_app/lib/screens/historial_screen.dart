@@ -45,8 +45,8 @@ class _HistorialScreenState extends State<HistorialScreen> {
         elevation: 8,
         shadowColor: _naranjaVivo.withOpacity(0.4),
       ),
-      body: SafeArea(
-        child: FutureBuilder<List<Escaneo>>(
+      body: FutureBuilder<List<Escaneo>>(
+
           future: _futureHistorial,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -154,7 +154,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
               },
               color: _naranjaVivo,
               child: ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 24),
                 itemCount: escaneos.length,
                 itemBuilder: (context, index) {
                   final escaneo = escaneos[index];
@@ -167,8 +167,8 @@ class _HistorialScreenState extends State<HistorialScreen> {
             );
           },
         ),
-      ),
-    );
+      );
+    
   }
 
   Widget _buildEscaneoCard(Escaneo escaneo) {

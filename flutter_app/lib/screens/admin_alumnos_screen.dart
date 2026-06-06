@@ -46,9 +46,10 @@ class _AdminAlumnosScreenState extends State<AdminAlumnosScreen> {
         }
         _isLoading = false;
       });
+      
+      if (_busquedaController.text.isNotEmpty) _filtrar();
     }
   }
-
   void _filtrar() {
     final query = _busquedaController.text.toLowerCase();
     setState(() {
@@ -76,6 +77,11 @@ class _AdminAlumnosScreenState extends State<AdminAlumnosScreen> {
         backgroundColor: _naranjaVivo,
         elevation: 8,
         shadowColor: _naranjaVivo.withOpacity(0.4),
+        titleTextStyle: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w900,
+          color: Colors.white,
+        ),
         actions: [
           IconButton(
             onPressed: _cargarAlumnos,

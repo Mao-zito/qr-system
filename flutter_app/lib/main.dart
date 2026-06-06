@@ -148,7 +148,11 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6B00)),
+
+        ),
       ),
     );
   }

@@ -87,16 +87,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _registro() async {
     if (!_formKeyReg.currentState!.validate()) return;
 
-    if (_contrasenaControllerReg.text != _confirmarContrasenaControllerReg.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Las contraseñas no coinciden'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
     setState(() => _isLoading = true);
     final result = await _apiService.registro(
       _nombreControllerReg.text.trim(),
@@ -134,25 +124,43 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ viewInsets.bottom sube cuando aparece el teclado
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFFFF6B00),
-              const Color(0xFFFF8C00).withOpacity(0.9),
-            ],
+      // ✅ false para que el gradiente no se corte cuando sube el teclado
+      resizeToAvoidBottomInset: false,
+      body: Stack(
+        children: [
+          // ✅ Gradiente siempre ocupa toda la pantalla
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFFFF6B00),
+                  const Color(0xFFFF8C00).withOpacity(0.9),
+                ],
+              ),
+            ),
           ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+          // ✅ Scroll que respeta el teclado con padding dinámico
+          SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: MediaQuery.of(context).padding.top + 24,
+              // ✅ cuando el teclado sube, el padding de abajo crece
+              bottom: bottomInset > 0 ? bottomInset + 16 : bottomPadding + 24,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo moderno
+                // Logo
                 TweenAnimationBuilder(
                   tween: Tween<double>(begin: 0, end: 1),
                   duration: const Duration(milliseconds: 800),
@@ -199,8 +207,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         letterSpacing: 0.5,
                       ),
                 ),
-                const SizedBox(height: 48),
-                // Card con formulario
+                const SizedBox(height: 40),
+                // Card formulario
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(32),
@@ -215,13 +223,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(32),
-                    child: _mostrarRegistro ? _buildRegistroForm() : _buildLoginForm(),
+                    child: _mostrarRegistro
+                        ? _buildRegistroForm()
+                        : _buildLoginForm(),
                   ),
                 ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -248,11 +258,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
           ),
           const SizedBox(height: 28),
-          // Email
           TextFormField(
             controller: _correoController,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFFF6B00)),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.email_outlined, color: Color(0xFFFF6B00)),
               labelText: 'Correo Electrónico',
               hintText: 'ejemplo@email.com',
             ),
@@ -264,7 +273,6 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           const SizedBox(height: 18),
-          // Contraseña
           TextFormField(
             controller: _contrasenaController,
             decoration: InputDecoration(
@@ -275,7 +283,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   _mostrarContrasena ? Icons.visibility : Icons.visibility_off,
                   color: const Color(0xFFFF6B00),
                 ),
-                onPressed: () => setState(() => _mostrarContrasena = !_mostrarContrasena),
+                onPressed: () =>
+                    setState(() => _mostrarContrasena = !_mostrarContrasena),
               ),
             ),
             obscureText: !_mostrarContrasena,
@@ -286,7 +295,6 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           const SizedBox(height: 28),
-          // Botón Login
           SizedBox(
             width: double.infinity,
             height: 56,
@@ -311,7 +319,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          // Registro
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -362,14 +369,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
           ),
           const SizedBox(height: 24),
-          // Nombre y Apellido
           Row(
             children: [
               Expanded(
                 child: TextFormField(
                   controller: _nombreControllerReg,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
                     labelText: 'Nombre',
                   ),
                   validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
@@ -379,8 +385,8 @@ class _LoginScreenState extends State<LoginScreen> {
               Expanded(
                 child: TextFormField(
                   controller: _apellidoControllerReg,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
                     labelText: 'Apellido',
                   ),
                   validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
@@ -389,21 +395,19 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          // Código
           TextFormField(
             controller: _codigoControllerReg,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFFFF6B00)),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.badge_outlined, color: Color(0xFFFF6B00)),
               labelText: 'Código de Estudiante',
             ),
             validator: (v) => v == null || v.isEmpty ? 'Ingresa tu código' : null,
           ),
           const SizedBox(height: 14),
-          // Teléfono
           TextFormField(
             controller: _telefonoControllerReg,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.phone_outlined, color: Color(0xFFFF6B00)),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.phone_outlined, color: Color(0xFFFF6B00)),
               labelText: 'Teléfono',
             ),
             keyboardType: TextInputType.phone,
@@ -415,11 +419,10 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           const SizedBox(height: 14),
-          // Email
           TextFormField(
             controller: _correoControllerReg,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFFF6B00)),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.email_outlined, color: Color(0xFFFF6B00)),
               labelText: 'Correo Electrónico',
             ),
             keyboardType: TextInputType.emailAddress,
@@ -430,7 +433,6 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           const SizedBox(height: 14),
-          // Contraseña
           TextFormField(
             controller: _contrasenaControllerReg,
             decoration: InputDecoration(
@@ -441,7 +443,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   _mostrarContrasenaReg ? Icons.visibility : Icons.visibility_off,
                   color: const Color(0xFFFF6B00),
                 ),
-                onPressed: () => setState(() => _mostrarContrasenaReg = !_mostrarContrasenaReg),
+                onPressed: () =>
+                    setState(() => _mostrarContrasenaReg = !_mostrarContrasenaReg),
               ),
             ),
             obscureText: !_mostrarContrasenaReg,
@@ -452,11 +455,10 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           const SizedBox(height: 14),
-          // Confirmar contraseña
           TextFormField(
             controller: _confirmarContrasenaControllerReg,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
               labelText: 'Confirmar Contraseña',
             ),
             obscureText: true,
@@ -467,7 +469,6 @@ class _LoginScreenState extends State<LoginScreen> {
             },
           ),
           const SizedBox(height: 28),
-          // Botón Registro
           SizedBox(
             width: double.infinity,
             height: 56,
@@ -492,7 +493,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          // Volver a login
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -515,9 +515,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ],
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).padding.bottom + 40,
           ),
         ],
       ),

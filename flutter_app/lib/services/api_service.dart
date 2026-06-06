@@ -131,6 +131,28 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> obtenerCategorias() async {
+    try {
+      final url = Uri.parse('${ApiConstants.baseUrl}/categorias/');
+      final response = await http.get(url, headers: _getHeaders())
+          .timeout(Duration(seconds: ApiConstants.timeoutSeconds));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'data': data.map((c) => {'id': c['id'], 'nombre': c['nombre']}).toList(),
+        };
+      } else {
+        return {'success': false, 'error': 'Error al obtener categorías'};
+      }
+    } on TimeoutException {
+      return {'success': false, 'error': 'Tiempo de conexión agotado'};
+    } catch (e) {
+      return {'success': false, 'error': 'Error: $e'};
+    }
+  }
+
   Future<Map<String, dynamic>> registrarObjeto(
     String nombre,
     String? descripcion,
@@ -288,7 +310,8 @@ class ApiService {
       return {'success': false, 'error': 'Error: $e'};
     }
   }
-   // ─── PERFIL ─────────────────────────────────────────────────────────────────
+
+  // ─── PERFIL ─────────────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> obtenerPerfil() async {
     try {
@@ -337,6 +360,7 @@ class ApiService {
       return {'success': false, 'error': 'Error: $e'};
     }
   }
+
   Future<Map<String, dynamic>> cambiarContrasena(
     String contrasenaActual,
     String contrasenaNueva,
@@ -355,9 +379,7 @@ class ApiService {
       if (response.statusCode == 200) {
         return {'success': true};
       } else {
-        final errorMsg =
-            jsonDecode(response.body)['detail'] ??
-            'Error al cambiar contraseña';
+        final errorMsg = jsonDecode(response.body)['detail'] ?? 'Error al cambiar contraseña';
         return {'success': false, 'error': errorMsg};
       }
     } on TimeoutException {
@@ -372,76 +394,38 @@ class ApiService {
   Future<Map<String, dynamic>> obtenerAlumnos() async {
     try {
       final url = Uri.parse('${ApiConstants.baseUrl}/auth/alumnos');
-
-      final response = await http
-          .get(url, headers: _getHeaders())
+      final response = await http.get(url, headers: _getHeaders())
           .timeout(Duration(seconds: ApiConstants.timeoutSeconds));
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': jsonDecode(response.body),
-        };
+        return {'success': true, 'data': jsonDecode(response.body)};
       } else {
-        final errorMsg =
-            jsonDecode(response.body)['detail'] ??
-            'Error al obtener alumnos';
-
-        return {
-          'success': false,
-          'error': errorMsg,
-        };
+        final errorMsg = jsonDecode(response.body)['detail'] ?? 'Error al obtener alumnos';
+        return {'success': false, 'error': errorMsg};
       }
     } on TimeoutException {
-      return {
-        'success': false,
-        'error': 'Tiempo de conexión agotado',
-      };
+      return {'success': false, 'error': 'Tiempo de conexión agotado'};
     } catch (e) {
-      return {
-        'success': false,
-        'error': 'Error: $e',
-      };
+      return {'success': false, 'error': 'Error: $e'};
     }
   }
 
-  Future<Map<String, dynamic>> obtenerHistorialAlumno(
-    int usuarioId,
-  ) async {
+  Future<Map<String, dynamic>> obtenerHistorialAlumno(int usuarioId) async {
     try {
-      final url = Uri.parse(
-        '${ApiConstants.baseUrl}/auth/alumnos/$usuarioId/historial',
-      );
-
-      final response = await http
-          .get(url, headers: _getHeaders())
+      final url = Uri.parse('${ApiConstants.baseUrl}/auth/alumnos/$usuarioId/historial');
+      final response = await http.get(url, headers: _getHeaders())
           .timeout(Duration(seconds: ApiConstants.timeoutSeconds));
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': jsonDecode(response.body),
-        };
+        return {'success': true, 'data': jsonDecode(response.body)};
       } else {
-        final errorMsg =
-            jsonDecode(response.body)['detail'] ??
-            'Error al obtener historial';
-
-        return {
-          'success': false,
-          'error': errorMsg,
-        };
+        final errorMsg = jsonDecode(response.body)['detail'] ?? 'Error al obtener historial';
+        return {'success': false, 'error': errorMsg};
       }
     } on TimeoutException {
-      return {
-        'success': false,
-        'error': 'Tiempo de conexión agotado',
-      };
+      return {'success': false, 'error': 'Tiempo de conexión agotado'};
     } catch (e) {
-      return {
-        'success': false,
-        'error': 'Error: $e',
-      };
+      return {'success': false, 'error': 'Error: $e'};
     }
   }
 }
