@@ -1,5 +1,3 @@
-# Esquemas Pydantic para validación de datos
-
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime
@@ -23,7 +21,7 @@ class UsuarioCreate(BaseModel):
     contrasena: str = Field(..., min_length=6)
     telefono: str = Field(..., min_length=7)
     codigo_estudiante: str = Field(..., min_length=3)
-    rol: str = Field(default="usuario")
+    # ✅ rol eliminado — siempre se asigna "usuario" en el router
 
 class UsuarioResponse(BaseModel):
     id: int

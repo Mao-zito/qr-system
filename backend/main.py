@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import os
 
 from app.routes import auth_router, objetos_router, escaneos_router, estadisticas_router, perfil_router
 from app.config import settings
@@ -14,7 +13,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_URL, "http://localhost:3000", "http://127.0.0.1:3000", "*"],
+    allow_origins=[settings.FRONTEND_URL, "http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,6 +24,7 @@ app.include_router(objetos_router)
 app.include_router(escaneos_router)
 app.include_router(estadisticas_router)
 app.include_router(perfil_router)
+
 
 @app.get("/")
 def inicio():
@@ -40,17 +40,21 @@ def inicio():
         }
     }
 
+
 @app.on_event("startup")
 def startup():
-    print("Conectando a la base de datos...")
-    Database.connect()
-    print("Conexión establecida")
+    print("Iniciando pool de conexiones...")
+    Database.init()
+    print("Pool de conexiones iniciado")
+
 
 @app.on_event("shutdown")
 def shutdown():
-    print("Cerrando conexión a la base de datos...")
-    Database.close()
-    print("Conexión cerrada")
+    print("Cerrando pool de conexiones...")
+    if Database._pool:
+        Database._pool.closeall()
+    print("Pool cerrado")
+
 
 if __name__ == "__main__":
     import uvicorn

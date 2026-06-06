@@ -1,43 +1,44 @@
 import os
+import traceback
 import psycopg2
+from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
 
 
 class Database:
-    _connection = None
+    _pool = None
 
     @classmethod
-    def connect(cls):
+    def init(cls):
         DATABASE_URL = os.getenv("DATABASE_URL")
         if not DATABASE_URL:
             raise Exception("DATABASE_URL no está configurada")
 
-        cls._connection = psycopg2.connect(
-            DATABASE_URL,
+        cls._pool = pool.ThreadedConnectionPool(
+            minconn=1,
+            maxconn=5,
+            dsn=DATABASE_URL,
             cursor_factory=RealDictCursor,
             sslmode="require"
         )
-        print("Conexión establecida")
-        return cls._connection
+        print("Pool de conexiones iniciado")
 
     @classmethod
     def get_connection(cls):
         try:
-            if cls._connection is None or cls._connection.closed != 0:
-                return cls.connect()
-
-            # ✅ ping correcto: cursor cerrado después de usarse
-            with cls._connection.cursor() as cur:
-                cur.execute("SELECT 1")
-                cur.fetchone()
-
-            return cls._connection
-
+            if cls._pool is None:
+                cls.init()
+            return cls._pool.getconn()
         except Exception:
-            print("Conexión caída, reconectando...")
-            # ✅ cerrar la conexión vieja antes de reconectar
-            try:
-                cls._connection.close()
-            except Exception:
-                pass
-            return cls.connect()
+            print("Error obteniendo conexión del pool:")
+            print(traceback.format_exc())
+            raise
+
+    @classmethod
+    def release(cls, conn):
+        try:
+            if cls._pool and conn:
+                cls._pool.putconn(conn)
+        except Exception:
+            print("Error liberando conexión:")
+            print(traceback.format_exc())

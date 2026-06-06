@@ -14,37 +14,26 @@ def login(datos: LoginRequest):
     if not usuario:
         raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos")
 
-    # FIX 1: RealDictCursor devuelve dict, no tupla
     usuario_id      = usuario["id"]
     nombre          = usuario["nombre"]
     correo          = usuario["correo"]
-    contraseña_hash = usuario["contrasena"]
+    contrasena_hash = usuario["contrasena"]
     rol             = usuario["rol"]
 
-    # FIX 2: detectar contraseña en texto plano antes de que bcrypt crashee
-    if not contraseña_hash or not contraseña_hash.startswith("$2b$"):
+    if not contrasena_hash or not contrasena_hash.startswith("$2b$"):
         raise HTTPException(
             status_code=401,
             detail="Credenciales inválidas. Vuelve a registrarte."
         )
 
-    if not PasswordHash.verify_password(datos.contrasena, contraseña_hash):
+    if not PasswordHash.verify_password(datos.contrasena, contrasena_hash):
         raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos")
 
     token = TokenManager.create_access_token(
-        data={
-            "sub": str(usuario_id),
-            "correo": correo,
-            "rol": rol
-        }
+        data={"sub": str(usuario_id), "correo": correo, "rol": rol}
     )
 
-    return {
-        "mensaje": "Login correcto",
-        "nombre": nombre,
-        "rol": rol,
-        "token": token
-    }
+    return {"mensaje": "Login correcto", "nombre": nombre, "rol": rol, "token": token}
 
 
 @router.post("/registro", response_model=dict)
@@ -63,13 +52,9 @@ def registro(usuario_data: UsuarioCreate):
             telefono=usuario_data.telefono,
             codigo_estudiante=usuario_data.codigo_estudiante,
             contrasena=usuario_data.contrasena,
-            rol=usuario_data.rol
+            rol="usuario"  # ✅ siempre usuario, nunca admin desde el cliente
         )
-
-        return {
-            "mensaje": "Usuario registrado exitosamente",
-            "usuario": usuario
-        }
+        return {"mensaje": "Usuario registrado exitosamente", "usuario": usuario}
 
     except Exception as e:
         print("ERROR EN REGISTRO:", str(e))
