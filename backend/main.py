@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import auth_router, objetos_router, escaneos_router, estadisticas_router, perfil_router
+from app.routes import auth_router, objetos_router, escaneos_router, estadisticas_router, perfil_router, ml_router
 from app.config import settings
 from app.database import Database
+
 
 app = FastAPI(
     title="QR System API",
@@ -24,6 +25,7 @@ app.include_router(objetos_router)
 app.include_router(escaneos_router)
 app.include_router(estadisticas_router)
 app.include_router(perfil_router)
+app.include_router(ml_router)
 
 
 @app.get("/")
