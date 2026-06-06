@@ -310,6 +310,56 @@ class ApiService {
       return {'success': false, 'error': 'Error: $e'};
     }
   }
+Future<Map<String, dynamic>> obtenerMlResumen() async {
+  try {
+    final url = Uri.parse('${ApiConstants.baseUrl}/ml/resumen');
+    final response = await http.get(url, headers: _getHeaders())
+        .timeout(Duration(seconds: ApiConstants.timeoutSeconds));
+    if (response.statusCode == 200) {
+      return {'success': true, 'data': jsonDecode(response.body)};
+    } else {
+      return {'success': false, 'error': 'Error al obtener resumen ML'};
+    }
+  } on TimeoutException {
+    return {'success': false, 'error': 'Tiempo de conexión agotado'};
+  } catch (e) {
+    return {'success': false, 'error': 'Error: $e'};
+  }
+}
+
+Future<Map<String, dynamic>> obtenerMlPerfiles() async {
+  try {
+    final url = Uri.parse('${ApiConstants.baseUrl}/ml/perfiles');
+    final response = await http.get(url, headers: _getHeaders())
+        .timeout(Duration(seconds: ApiConstants.timeoutSeconds));
+    if (response.statusCode == 200) {
+      return {'success': true, 'data': jsonDecode(response.body)};
+    } else {
+      return {'success': false, 'error': 'Error al obtener perfiles ML'};
+    }
+  } on TimeoutException {
+    return {'success': false, 'error': 'Tiempo de conexión agotado'};
+  } catch (e) {
+    return {'success': false, 'error': 'Error: $e'};
+  }
+}
+
+Future<Map<String, dynamic>> obtenerMlAnomalias() async {
+  try {
+    final url = Uri.parse('${ApiConstants.baseUrl}/ml/anomalias');
+    final response = await http.get(url, headers: _getHeaders())
+        .timeout(Duration(seconds: ApiConstants.timeoutSeconds));
+    if (response.statusCode == 200) {
+      return {'success': true, 'data': jsonDecode(response.body)};
+    } else {
+      return {'success': false, 'error': 'Error al obtener anomalías ML'};
+    }
+  } on TimeoutException {
+    return {'success': false, 'error': 'Tiempo de conexión agotado'};
+  } catch (e) {
+    return {'success': false, 'error': 'Error: $e'};
+  }
+}
 
   // ─── PERFIL ─────────────────────────────────────────────────────────────────
 

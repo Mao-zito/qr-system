@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import 'admin_alumnos_screen.dart';
 import 'admin_detalle_escaneo_screen.dart';
+import 'admin_ml_screen.dart';         // ✅ nuevo
 import 'login_screen.dart';
 import 'perfil_screen.dart';
 
@@ -25,10 +26,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   final _busquedaController = TextEditingController();
   DateTime? _fechaFiltro;
   int _selectedIndex = 0;
-  
-  static const Color _naranjaVivo = Color(0xFFFF6B00);
+
+  static const Color _naranjaVivo    = Color(0xFFFF6B00);
   static const Color _naranjaNaranja = Color(0xFFFF8C00);
-  static const Color _blanco = Color(0xFFFAFAFA);
+  static const Color _blanco         = Color(0xFFFAFAFA);
 
   @override
   void initState() {
@@ -53,11 +54,15 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           _escaneosFiltrados = _escaneos;
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(result['error'] ?? 'Error al cargar escaneos'), backgroundColor: Colors.red),
+            SnackBar(
+              content: Text(result['error'] ?? 'Error al cargar escaneos'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
         _isLoading = false;
       });
+      if (_busquedaController.text.isNotEmpty) _filtrar();
     }
   }
 
@@ -65,12 +70,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     final query = _busquedaController.text.toLowerCase();
     setState(() {
       _escaneosFiltrados = _escaneos.where((e) {
-        final objeto = (e['objeto'] ?? '').toLowerCase();
-        final alumno = (e['alumno'] ?? '').toLowerCase();
-        final apellido = (e['apellido'] ?? '').toLowerCase();
-        final codigo = (e['codigo_estudiante'] ?? '').toLowerCase();
-        final ubicacion = (e['ubicacion'] ?? '').toLowerCase();
-        final fecha = e['fecha_hora']?.toString() ?? '';
+        final objeto   = (e['objeto']            ?? '').toLowerCase();
+        final alumno   = (e['alumno']            ?? '').toLowerCase();
+        final apellido = (e['apellido']          ?? '').toLowerCase();
+        final codigo   = (e['codigo_estudiante'] ?? '').toLowerCase();
+        final ubicacion = (e['ubicacion']        ?? '').toLowerCase();
+        final fecha    = e['fecha_hora']?.toString() ?? '';
 
         final coincideTexto = query.isEmpty ||
             objeto.contains(query) ||
@@ -104,12 +109,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }
   }
 
-  void _limpiarFiltros() {
-    setState(() {
-      _fechaFiltro = null;
-      _busquedaController.clear();
-      _escaneosFiltrados = _escaneos;
-    });
+  // ✅ limpiar solo fecha, mantener texto del buscador
+  void _limpiarFecha() {
+    setState(() => _fechaFiltro = null);
+    _filtrar();
   }
 
   void _logout() async {
@@ -132,16 +135,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const AdminAlumnosScreen()),
-      ).then((_) {
-        setState(() => _selectedIndex = 0);
-      });
+      ).then((_) => setState(() => _selectedIndex = 0));
     } else if (index == 2) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const PerfilScreen()),
-      ).then((_) {
-        setState(() => _selectedIndex = 0);
-      });
+      ).then((_) => setState(() => _selectedIndex = 0));
     }
   }
 
@@ -164,12 +163,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Center(
               child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const PerfilScreen()),
-                  );
-                },
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PerfilScreen()),
+                ),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
@@ -187,11 +184,29 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ),
             ),
           ),
+          // ✅ menú con ML y logout
           PopupMenuButton(
             onSelected: (value) {
-              if (value == 'logout') _logout();
+              if (value == 'ml') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AdminMlScreen()),
+                );
+              } else if (value == 'logout') {
+                _logout();
+              }
             },
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'ml',
+                child: Row(
+                  children: [
+                    Icon(Icons.psychology_outlined, color: _naranjaVivo),
+                    const SizedBox(width: 12),
+                    const Text('Análisis ML', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'logout',
                 child: Row(
@@ -210,15 +225,15 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Cards de estadísticas
+            // Stats
             Container(
               color: _naranjaVivo,
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
               child: Row(
                 children: [
-                  _buildStatCard('Total', '${_escaneos.length}', Icons.qr_code_scanner),
+                  _buildStatCard('${_escaneosFiltrados.length}', 'Filtrados', Icons.qr_code_scanner),
                   const SizedBox(width: 12),
-                  _buildStatCard('Hoy', '${_escaneosHoy()}', Icons.today),
+                  _buildStatCard('${_escaneosHoy()}', 'Hoy', Icons.today),
                 ],
               ),
             ),
@@ -230,9 +245,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   TextField(
                     controller: _busquedaController,
                     onChanged: (_) => _filtrar(),
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Buscar alumno, código, objeto...',
-                      prefixIcon: const Icon(Icons.search_outlined),
+                      prefixIcon: Icon(Icons.search_outlined),
                       prefixIconColor: _naranjaVivo,
                     ),
                   ),
@@ -249,10 +264,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           style: const TextStyle(fontSize: 13),
                         ),
                       ),
-                      if (_fechaFiltro != null) ...[
+                      // ✅ aparece si hay fecha O texto
+                      if (_fechaFiltro != null || _busquedaController.text.isNotEmpty) ...[
                         const SizedBox(width: 8),
                         TextButton.icon(
-                          onPressed: _limpiarFiltros,
+                          onPressed: _limpiarFecha,
                           icon: const Icon(Icons.clear, size: 16),
                           label: const Text('Limpiar'),
                           style: TextButton.styleFrom(foregroundColor: _naranjaVivo),
@@ -270,7 +286,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 ],
               ),
             ),
-            // Lista de escaneos
+            // Lista
             Expanded(
               child: _isLoading
                   ? const Center(
@@ -319,12 +335,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                               final isEntrada = e['tipo_evento'] == 'ENTRADA';
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
-                                child: _buildEscaneoCard(
-                                  e,
-                                  nombreCompleto,
-                                  fecha,
-                                  isEntrada,
-                                ),
+                                child: _buildEscaneoCard(e, nombreCompleto, fecha, isEntrada),
                               );
                             },
                           ),
@@ -391,10 +402,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         color: Colors.white,
-        border: Border.all(
-          color: const Color(0xFFE8E8E8),
-          width: 1.5,
-        ),
+        border: Border.all(color: const Color(0xFFE8E8E8), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -406,14 +414,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AdminDetalleEscaneoScreen(escaneo: escaneo),
-              ),
-            );
-          },
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AdminDetalleEscaneoScreen(escaneo: escaneo),
+            ),
+          ),
           borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -427,11 +433,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Center(
-                    child: Icon(
-                      Icons.qr_code_2,
-                      color: _naranjaVivo,
-                      size: 26,
-                    ),
+                    child: Icon(Icons.qr_code_2, color: _naranjaVivo, size: 26),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -492,11 +494,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: _naranjaVivo.withOpacity(0.4),
-                ),
+                Icon(Icons.arrow_forward_ios, size: 16, color: _naranjaVivo.withOpacity(0.4)),
               ],
             ),
           ),
@@ -505,7 +503,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 
-  Widget _buildStatCard(String label, String valor, IconData icon) {
+  Widget _buildStatCard(String valor, String label, IconData icon) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(14),
@@ -529,17 +527,17 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Colors.white.withOpacity(0.8),
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-                Text(
                   valor,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
+                      ),
+                ),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.white.withOpacity(0.8),
+                        fontWeight: FontWeight.w600,
                       ),
                 ),
               ],
