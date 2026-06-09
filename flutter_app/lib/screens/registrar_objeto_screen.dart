@@ -10,16 +10,16 @@ class RegistrarObjetoScreen extends StatefulWidget {
 }
 
 class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nombreController = TextEditingController();
+  final _formKey              = GlobalKey<FormState>();
+  final _nombreController     = TextEditingController();
   final _descripcionController = TextEditingController();
   int? _categoriaSeleccionada;
-  bool _isLoading = false;
+  bool _isLoading          = false;
   List<Map<String, dynamic>> _categorias = [];
   bool _cargandoCategorias = true;
 
   static const Color _naranjaVivo = Color(0xFFFF6B00);
-  static const Color _blanco = Color(0xFFFAFAFA);
+  static const Color _blanco      = Color(0xFFFAFAFA);
 
   @override
   void initState() {
@@ -55,18 +55,13 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
 
   Future<void> _registrarObjeto() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
-
     try {
       final resultado = await ApiService().registrarObjeto(
         _nombreController.text.trim(),
-        _descripcionController.text.trim().isEmpty
-            ? null
-            : _descripcionController.text.trim(),
+        _descripcionController.text.trim().isEmpty ? null : _descripcionController.text.trim(),
         _categoriaSeleccionada,
       );
-
       if (mounted) {
         if (resultado['success']) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -110,13 +105,12 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: _blanco,
-      // ✅ false para manejar el teclado manualmente con padding dinámico
-      resizeToAvoidBottomInset: false,
+      // ✅ true — Flutter sube el contenido cuando aparece el teclado
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('Registrar Objeto'),
         backgroundColor: _naranjaVivo,
@@ -130,17 +124,14 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          20, 24, 20,
-          // ✅ sube con el teclado, respeta botones del sistema
-          bottomInset > 0 ? bottomInset + 16 : bottomPadding + 32,
-        ),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: EdgeInsets.fromLTRB(20, 24, 20, bottomPadding + 32),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Header ─────────────────────────────────────────────────
+              // Header
               Row(
                 children: [
                   Container(
@@ -176,18 +167,14 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
               ),
               const SizedBox(height: 28),
 
-              // ── Card formulario ─────────────────────────────────────────
+              // Card formulario
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
                   color: Colors.white,
                   border: Border.all(color: const Color(0xFFE8E8E8), width: 1.5),
                   boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 12,
-                      spreadRadius: 2,
-                    ),
+                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, spreadRadius: 2),
                   ],
                 ),
                 padding: const EdgeInsets.all(22),
@@ -214,12 +201,8 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
                       ),
                       textCapitalization: TextCapitalization.sentences,
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Ingresa el nombre del objeto';
-                        }
-                        if (value.trim().length < 2) {
-                          return 'El nombre debe tener al menos 2 caracteres';
-                        }
+                        if (value == null || value.trim().isEmpty) return 'Ingresa el nombre del objeto';
+                        if (value.trim().length < 2) return 'El nombre debe tener al menos 2 caracteres';
                         return null;
                       },
                     ),
@@ -242,12 +225,10 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
                               labelText: 'Categoría',
                               prefixIcon: Icon(Icons.category_outlined, color: _naranjaVivo),
                             ),
-                            items: _categorias.map((cat) {
-                              return DropdownMenuItem<int>(
-                                value: cat['id'] as int,
-                                child: Text(cat['nombre'] as String),
-                              );
-                            }).toList(),
+                            items: _categorias.map((cat) => DropdownMenuItem<int>(
+                              value: cat['id'] as int,
+                              child: Text(cat['nombre'] as String),
+                            )).toList(),
                             onChanged: (value) => setState(() => _categoriaSeleccionada = value),
                             validator: (value) {
                               if (value == null) return 'Selecciona una categoría';
@@ -273,21 +254,18 @@ class _RegistrarObjetoScreenState extends State<RegistrarObjetoScreen> {
               ),
               const SizedBox(height: 24),
 
-              // ── Botón registrar ─────────────────────────────────────────
+              // Botón
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton.icon(
                   onPressed: (_isLoading || _cargandoCategorias) ? null : _registrarObjeto,
                   icon: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
+                      ? const SizedBox(width: 20, height: 20,
                           child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             strokeWidth: 2.5,
-                          ),
-                        )
+                          ))
                       : const Icon(Icons.qr_code_2),
                   label: Text(
                     _isLoading ? 'Registrando...' : 'Registrar Objeto',

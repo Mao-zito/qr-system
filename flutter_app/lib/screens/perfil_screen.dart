@@ -19,20 +19,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
   final _apiService = ApiService();
   Map<String, dynamic>? _perfil;
   bool _isLoading = true;
-  bool _editando = false;
+  bool _editando  = false;
   bool _guardando = false;
 
-  final _nombreController = TextEditingController();
+  final _nombreController   = TextEditingController();
   final _apellidoController = TextEditingController();
   final _telefonoController = TextEditingController();
 
-  final _contrasenaActualController = TextEditingController();
-  final _contrasenaNuevaController = TextEditingController();
-  final _confirmarContrasenaController = TextEditingController();
+  final _contrasenaActualController     = TextEditingController();
+  final _contrasenaNuevaController      = TextEditingController();
+  final _confirmarContrasenaController  = TextEditingController();
 
-  static const Color _naranjaVivo = Color(0xFFFF6B00);
+  static const Color _naranjaVivo    = Color(0xFFFF6B00);
   static const Color _naranjaNaranja = Color(0xFFFF8C00);
-  static const Color _blanco = Color(0xFFFAFAFA);
+  static const Color _blanco         = Color(0xFFFAFAFA);
 
   @override
   void initState() {
@@ -58,7 +58,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
       setState(() {
         if (result['success']) {
           _perfil = result['data'];
-          _nombreController.text = _perfil!['nombre'] ?? '';
+          _nombreController.text   = _perfil!['nombre']   ?? '';
           _apellidoController.text = _perfil!['apellido'] ?? '';
           _telefonoController.text = _perfil!['telefono'] ?? '';
         }
@@ -71,10 +71,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final picker = ImagePicker();
     final imagen = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
     if (imagen == null) return;
-
-    final bytes = await File(imagen.path).readAsBytes();
+    final bytes     = await File(imagen.path).readAsBytes();
     final base64Str = base64Encode(bytes);
-
     setState(() => _guardando = true);
     final result = await _apiService.actualizarPerfil(fotoPerfil: base64Str);
     if (mounted) {
@@ -95,17 +93,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Future<void> _guardarPerfil() async {
     setState(() => _guardando = true);
     final result = await _apiService.actualizarPerfil(
-      nombre: _nombreController.text.trim(),
+      nombre:   _nombreController.text.trim(),
       apellido: _apellidoController.text.trim(),
       telefono: _telefonoController.text.trim(),
     );
     if (mounted) {
       setState(() => _guardando = false);
       if (result['success']) {
-        setState(() {
-          _perfil = result['data'];
-          _editando = false;
-        });
+        setState(() { _perfil = result['data']; _editando = false; });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Perfil actualizado'), backgroundColor: Colors.green),
         );
@@ -170,91 +165,42 @@ class _PerfilScreenState extends State<PerfilScreen> {
       ),
       builder: (context) => Padding(
         padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 28,
-          // ✅ respeta el teclado en el bottom sheet
+          left: 24, right: 24, top: 20,
           bottom: MediaQuery.of(context).viewInsets.bottom + 32,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ handle visual del bottom sheet
             Center(
               child: Container(
-                width: 40,
-                height: 4,
+                width: 40, height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+                decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
               ),
             ),
-            Text(
-              'Cambiar contraseña',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: _naranjaVivo,
-                  ),
-            ),
+            Text('Cambiar contraseña',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900, color: _naranjaVivo)),
             const SizedBox(height: 6),
-            Text(
-              'Actualiza tu contraseña para mantener tu cuenta segura',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey.shade600,
-                  ),
-            ),
+            Text('Actualiza tu contraseña para mantener tu cuenta segura',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
+            const SizedBox(height: 20),
+            _buildEditField(controller: _contrasenaActualController, label: 'Contraseña actual', obscure: true),
+            const SizedBox(height: 12),
+            _buildEditField(controller: _contrasenaNuevaController,  label: 'Nueva contraseña',  obscure: true),
+            const SizedBox(height: 12),
+            _buildEditField(controller: _confirmarContrasenaController, label: 'Confirmar contraseña', obscure: true),
             const SizedBox(height: 24),
-            TextField(
-              controller: _contrasenaActualController,
-              decoration: const InputDecoration(
-                labelText: 'Contraseña actual',
-                prefixIcon: Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
-              ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: _contrasenaNuevaController,
-              decoration: const InputDecoration(
-                labelText: 'Nueva contraseña',
-                prefixIcon: Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
-              ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: _confirmarContrasenaController,
-              decoration: const InputDecoration(
-                labelText: 'Confirmar nueva contraseña',
-                prefixIcon: Icon(Icons.lock_outline, color: Color(0xFFFF6B00)),
-              ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 28),
             SizedBox(
-              width: double.infinity,
-              height: 56,
+              width: double.infinity, height: 52,
               child: ElevatedButton(
                 onPressed: _guardando ? null : _cambiarContrasena,
                 child: _guardando
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : Text(
-                        'Cambiar contraseña',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                            ),
-                      ),
+                    ? const SizedBox(height: 22, width: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
+                    : Text('Cambiar contraseña',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
               ),
             ),
           ],
@@ -268,29 +214,19 @@ class _PerfilScreenState extends State<PerfilScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Cerrar sesión',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        content: Text(
-          '¿Estás seguro de que deseas cerrar sesión?',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
+        title: Text('Cerrar sesión',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+        content: Text('¿Estás seguro de que deseas cerrar sesión?',
+            style: Theme.of(context).textTheme.bodyMedium),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancelar', style: TextStyle(fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _logout();
-            },
+            onPressed: () { Navigator.pop(context); _logout(); },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text(
-              'Cerrar sesión',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-            ),
+            child: const Text('Cerrar sesión', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -299,11 +235,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ padding inferior del sistema (botones de navegación del celular)
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: _blanco,
+      // ✅ true para que el teclado suba el contenido correctamente
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('Mi Perfil'),
         backgroundColor: _naranjaVivo,
@@ -311,16 +248,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
         shadowColor: _naranjaVivo.withOpacity(0.4),
         actions: [
           if (!_editando)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => setState(() => _editando = true),
-            )
+            IconButton(icon: const Icon(Icons.edit), onPressed: () => setState(() => _editando = true))
           else
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: () {
                 setState(() => _editando = false);
-                _nombreController.text = _perfil!['nombre'] ?? '';
+                _nombreController.text   = _perfil!['nombre']   ?? '';
                 _apellidoController.text = _perfil!['apellido'] ?? '';
                 _telefonoController.text = _perfil!['telefono'] ?? '';
               },
@@ -328,20 +262,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(_naranjaVivo),
-              ),
-            )
+          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(_naranjaVivo)))
           : SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                24, 24, 24,
-                // ✅ padding dinámico — respeta botones del sistema
-                bottomPadding + 32,
-              ),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.fromLTRB(24, 24, 24, bottomPadding + 32),
               child: Column(
                 children: [
-                  // ── Foto de perfil ──────────────────────────────────────
+                  // Foto
                   Center(
                     child: Stack(
                       children: [
@@ -349,52 +276,31 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [_naranjaVivo, _naranjaNaranja],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: _naranjaVivo.withOpacity(0.25),
-                                blurRadius: 20,
-                                spreadRadius: 5,
-                              ),
-                            ],
+                            gradient: const LinearGradient(colors: [_naranjaVivo, _naranjaNaranja]),
+                            boxShadow: [BoxShadow(color: _naranjaVivo.withOpacity(0.25), blurRadius: 20, spreadRadius: 5)],
                           ),
                           child: CircleAvatar(
                             radius: 58,
                             backgroundColor: _blanco,
                             backgroundImage: _perfil!['foto_perfil'] != null
-                                ? MemoryImage(base64Decode(_perfil!['foto_perfil']))
-                                : null,
+                                ? MemoryImage(base64Decode(_perfil!['foto_perfil'])) : null,
                             child: _perfil!['foto_perfil'] == null
-                                ? Text(
-                                    (_perfil!['nombre'] ?? 'U')[0].toUpperCase(),
+                                ? Text((_perfil!['nombre'] ?? 'U')[0].toUpperCase(),
                                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                          color: _naranjaVivo,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                  )
+                                        color: _naranjaVivo, fontWeight: FontWeight.w900))
                                 : null,
                           ),
                         ),
                         Positioned(
-                          bottom: 0,
-                          right: 0,
+                          bottom: 0, right: 0,
                           child: GestureDetector(
                             onTap: _seleccionarFoto,
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: _naranjaVivo,
-                                shape: BoxShape.circle,
+                                color: _naranjaVivo, shape: BoxShape.circle,
                                 border: Border.all(color: _blanco, width: 2),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: _naranjaVivo.withOpacity(0.3),
-                                    blurRadius: 12,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
+                                boxShadow: [BoxShadow(color: _naranjaVivo.withOpacity(0.3), blurRadius: 12)],
                               ),
                               child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
                             ),
@@ -405,145 +311,83 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Nombre y rol
                   Text(
                     '${_perfil!['nombre'] ?? ''} ${_perfil!['apellido'] ?? ''}'.trim(),
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          color: const Color(0xFF1F1F1F),
-                        ),
+                        fontWeight: FontWeight.w900, color: const Color(0xFF1F1F1F)),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _naranjaVivo.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      _perfil!['rol']?.toString().toUpperCase() ?? '',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: _naranjaVivo,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                          ),
-                    ),
+                    decoration: BoxDecoration(color: _naranjaVivo.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+                    child: Text(_perfil!['rol']?.toString().toUpperCase() ?? '',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: _naranjaVivo, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
                   ),
                   const SizedBox(height: 28),
 
-                  // ── Card información personal ────────────────────────────
+                  // Card info
                   Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24), color: Colors.white,
                       border: Border.all(color: const Color(0xFFE8E8E8), width: 1.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 12,
-                          spreadRadius: 2,
-                        ),
-                      ],
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, spreadRadius: 2)],
                     ),
                     padding: const EdgeInsets.all(22),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'INFORMACIÓN PERSONAL',
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                color: _naranjaVivo,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.8,
-                              ),
-                        ),
+                        Text('INFORMACIÓN PERSONAL',
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: _naranjaVivo, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
                         const SizedBox(height: 18),
                         if (_editando) ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _nombreController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Nombre',
-                                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: TextField(
-                                  controller: _apellidoController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Apellido',
-                                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFFFF6B00)),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          TextField(
+                          // ✅ nombre y apellido en columna, no en Row
+                          _buildEditField(controller: _nombreController,   label: 'Nombre'),
+                          const SizedBox(height: 12),
+                          _buildEditField(controller: _apellidoController, label: 'Apellido'),
+                          const SizedBox(height: 12),
+                          _buildEditField(
                             controller: _telefonoController,
-                            decoration: const InputDecoration(
-                              labelText: 'Teléfono',
-                              prefixIcon: Icon(Icons.phone_outlined, color: Color(0xFFFF6B00)),
-                            ),
+                            label: 'Teléfono',
                             keyboardType: TextInputType.phone,
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 20),
                           SizedBox(
-                            width: double.infinity,
-                            height: 56,
+                            width: double.infinity, height: 52,
                             child: ElevatedButton(
                               onPressed: _guardando ? null : _guardarPerfil,
                               child: _guardando
-                                  ? const SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 3,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                      ),
-                                    )
-                                  : Text(
-                                      'Guardar cambios',
+                                  ? const SizedBox(height: 22, width: 22,
+                                      child: CircularProgressIndicator(strokeWidth: 2.5,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
+                                  : Text('Guardar cambios',
                                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                    ),
+                                          color: Colors.white, fontWeight: FontWeight.w700)),
                             ),
                           ),
                         ] else ...[
                           _buildInfoRow(Icons.person_outline, 'Nombre completo',
                               '${_perfil!['nombre'] ?? ''} ${_perfil!['apellido'] ?? ''}'.trim()),
                           _buildDivider(),
-                          _buildInfoRow(Icons.email_outlined, 'Correo', _perfil!['correo'] ?? '-'),
+                          _buildInfoRow(Icons.email_outlined,  'Correo',           _perfil!['correo']            ?? '-'),
                           _buildDivider(),
-                          _buildInfoRow(Icons.phone_outlined, 'Teléfono',
-                              _perfil!['telefono'] ?? 'Sin registrar'),
+                          _buildInfoRow(Icons.phone_outlined,  'Teléfono',         _perfil!['telefono']          ?? 'Sin registrar'),
                           _buildDivider(),
-                          _buildInfoRow(Icons.badge_outlined, 'Código estudiante',
-                              _perfil!['codigo_estudiante'] ?? 'Sin registrar'),
+                          _buildInfoRow(Icons.badge_outlined,  'Código estudiante', _perfil!['codigo_estudiante'] ?? 'Sin registrar'),
                         ],
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
 
-                  // ── Botón cambiar contraseña ─────────────────────────────
                   SizedBox(
-                    width: double.infinity,
-                    height: 56,
+                    width: double.infinity, height: 52,
                     child: OutlinedButton.icon(
                       onPressed: _mostrarCambiarContrasena,
                       icon: const Icon(Icons.lock_outline),
-                      label: const Text(
-                        'Cambiar contraseña',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
+                      label: const Text('Cambiar contraseña', style: TextStyle(fontWeight: FontWeight.w700)),
                       style: OutlinedButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         side: const BorderSide(color: _naranjaVivo, width: 2),
@@ -553,20 +397,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // ── Botón cerrar sesión ──────────────────────────────────
                   SizedBox(
-                    width: double.infinity,
-                    height: 56,
+                    width: double.infinity, height: 52,
                     child: ElevatedButton.icon(
                       onPressed: _confirmarLogout,
                       icon: const Icon(Icons.logout),
-                      label: const Text(
-                        'Cerrar Sesión',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
+                      label: const Text('Cerrar Sesión', style: TextStyle(fontWeight: FontWeight.w700)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade500,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.red.shade500, foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         elevation: 0,
                       ),
@@ -578,6 +416,36 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
+  Widget _buildEditField({
+    required TextEditingController controller,
+    required String label,
+    bool obscure = false,
+    TextInputType? keyboardType,
+  }) =>
+      TextField(
+        controller: controller,
+        obscureText: obscure,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(
+            label.contains('Nombre') ? Icons.person_outline
+                : label.contains('Apellido') ? Icons.person_outline
+                : label.contains('Teléfono') ? Icons.phone_outlined
+                : Icons.lock_outline,
+            color: _naranjaVivo,
+            size: 20,
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          border:        OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.grey.shade300)),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.grey.shade300)),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _naranjaVivo, width: 2)),
+          filled: true,
+          fillColor: Colors.grey.shade50,
+          labelStyle: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+        ),
+      );
+
   Widget _buildDivider() => Divider(color: Colors.grey.shade100, height: 1, thickness: 1);
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
@@ -587,10 +455,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: _naranjaVivo.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: BoxDecoration(color: _naranjaVivo.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: _naranjaVivo, size: 20),
           ),
           const SizedBox(width: 14),
@@ -598,23 +463,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Colors.grey.shade500,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
-                      ),
-                ),
+                Text(label,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.grey.shade500, fontWeight: FontWeight.w600, letterSpacing: 0.3)),
                 const SizedBox(height: 3),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F1F1F),
-                      ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                Text(value,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600, color: const Color(0xFF1F1F1F)),
+                    overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
