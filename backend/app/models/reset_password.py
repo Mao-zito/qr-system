@@ -64,9 +64,12 @@ def _enviar_email(destinatario: str, codigo: str) -> bool:
 
     msg.attach(MIMEText(html, "html"))
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.ehlo()
+        server.starttls()
         server.login(gmail_user, gmail_password)
         server.sendmail(gmail_user, destinatario, msg.as_string())
+
 
     return True
 
