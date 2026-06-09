@@ -88,6 +88,53 @@ class ApiService {
       return {'success': false, 'error': 'Error: $e'};
     }
   }
+Future<Map<String, dynamic>> solicitarReset(String correo) async {
+  try {
+    final url = Uri.parse('${ApiConstants.baseUrl}/auth/solicitar-reset');
+    final response = await http.post(url,
+        headers: _getHeaders(withAuth: false),
+        body: jsonEncode({'correo': correo}))
+        .timeout(Duration(seconds: ApiConstants.timeoutSeconds));
+    if (response.statusCode == 200) return {'success': true};
+    return {'success': false, 'error': jsonDecode(response.body)['detail'] ?? 'Error'};
+  } on TimeoutException {
+    return {'success': false, 'error': 'Tiempo de conexión agotado'};
+  } catch (e) {
+    return {'success': false, 'error': 'Error: $e'};
+  }
+}
+
+Future<Map<String, dynamic>> verificarCodigoReset(String correo, String codigo) async {
+  try {
+    final url = Uri.parse('${ApiConstants.baseUrl}/auth/verificar-codigo');
+    final response = await http.post(url,
+        headers: _getHeaders(withAuth: false),
+        body: jsonEncode({'correo': correo, 'codigo': codigo}))
+        .timeout(Duration(seconds: ApiConstants.timeoutSeconds));
+    if (response.statusCode == 200) return {'success': true};
+    return {'success': false, 'error': jsonDecode(response.body)['detail'] ?? 'Error'};
+  } on TimeoutException {
+    return {'success': false, 'error': 'Tiempo de conexión agotado'};
+  } catch (e) {
+    return {'success': false, 'error': 'Error: $e'};
+  }
+}
+
+Future<Map<String, dynamic>> restablecerContrasena(String correo, String codigo, String nueva) async {
+  try {
+    final url = Uri.parse('${ApiConstants.baseUrl}/auth/restablecer-contrasena');
+    final response = await http.post(url,
+        headers: _getHeaders(withAuth: false),
+        body: jsonEncode({'correo': correo, 'codigo': codigo, 'nueva_contrasena': nueva}))
+        .timeout(Duration(seconds: ApiConstants.timeoutSeconds));
+    if (response.statusCode == 200) return {'success': true};
+    return {'success': false, 'error': jsonDecode(response.body)['detail'] ?? 'Error'};
+  } on TimeoutException {
+    return {'success': false, 'error': 'Tiempo de conexión agotado'};
+  } catch (e) {
+    return {'success': false, 'error': 'Error: $e'};
+  }
+}
 
   // ─── OBJETOS ────────────────────────────────────────────────────────────────
 
