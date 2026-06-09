@@ -1,30 +1,46 @@
-# QR System 
+# QR System
 
-Sistema de registro y control de objetos con códigos QR. Desarrollado con Flutter (móvil) y FastAPI + PostgreSQL (backend).
+Sistema de registro y control de objetos con códigos QR. Desarrollado con Flutter (móvil), FastAPI (backend) desplegado en Railway y PostgreSQL en Neon.
 
-##  Requisitos
+## Arquitectura
 
-- Python 3.13.0
-- Flutter 3.32.5
-- PostgreSQL 14+
-
-## 🗄️ Base de Datos
-
-1. Instala PostgreSQL y crea la base de datos:
-
-```sql
-CREATE DATABASE qr_system;
+```
+ESP32 + GM65 (lector QR)
+        ↓ POST /escaneos/{qr_code}
+FastAPI (Railway) ←→ PostgreSQL (Neon)
+        ↑
+App Flutter (Android APK)
 ```
 
-2. Crea las tablas:
+## Tecnologías
+
+| Capa | Tecnología |
+|------|-----------|
+| Mobile | Flutter 3.32.5 |
+| Backend | Python 3.13 + FastAPI |
+| Base de datos | PostgreSQL (Neon) |
+| Despliegue backend | Railway |
+| Autenticación | JWT + bcrypt |
+| ML | scikit-learn (KMeans + Isolation Forest) |
+| Email | Resend API |
+
+---
+
+## Base de Datos
+
+Ejecutar en Neon SQL Editor:
 
 ```sql
 CREATE TABLE cuentas (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100),
     correo VARCHAR(100) UNIQUE NOT NULL,
     contrasena VARCHAR(255) NOT NULL,
-    rol VARCHAR(20) DEFAULT 'usuario'
+    telefono VARCHAR(20),
+    codigo_estudiante VARCHAR(50),
+    rol VARCHAR(20) DEFAULT 'usuario',
+    foto_perfil TEXT
 );
 
 CREATE TABLE categorias (
@@ -49,116 +65,186 @@ CREATE TABLE escaneos (
     usuario_id INTEGER REFERENCES cuentas(id),
     ubicacion VARCHAR(100),
     dispositivo VARCHAR(50),
-    fecha_hora TIMESTAMP DEFAULT NOW()
+    fecha_hora TIMESTAMP DEFAULT NOW(),
+    tipo_evento VARCHAR(10) DEFAULT 'ENTRADA'
 );
 
-INSERT INTO categorias (nombre) VALUES 
-('Electronico'),
-('Movilidad'),
-('Deportivo'),
-('Accesorio');
+CREATE TABLE password_reset_codes (
+    id SERIAL PRIMARY KEY,
+    correo VARCHAR(255) NOT NULL,
+    codigo VARCHAR(6) NOT NULL,
+    expira_en TIMESTAMP NOT NULL,
+    usado BOOLEAN DEFAULT FALSE,
+    creado_en TIMESTAMP DEFAULT NOW()
+);
 
+CREATE TABLE ml_perfiles_alumnos (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER UNIQUE REFERENCES cuentas(id),
+    perfil VARCHAR(20),
+    total_escaneos INTEGER,
+    dias_activo INTEGER,
+    hora_promedio FLOAT,
+    frecuencia_semanal FLOAT,
+    actualizado_en TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE ml_anomalias_escaneos (
+    id SERIAL PRIMARY KEY,
+    escaneo_id INTEGER UNIQUE REFERENCES escaneos(id),
+    usuario_id INTEGER REFERENCES cuentas(id),
+    score FLOAT,
+    motivo VARCHAR(100),
+    detectado_en TIMESTAMP DEFAULT NOW()
+);
+
+INSERT INTO categorias (nombre) VALUES
+('Laptop'), ('Tablet'), ('Celular'), ('Otro');
 ```
 
-##  Backend (FastAPI)
+---
 
-1. Entra a la carpeta backend:
+## Backend (Railway)
+
+### Variables de entorno en Railway
+
+```
+DATABASE_URL     = postgresql://...neon.tech/neondb?sslmode=require
+SECRET_KEY       = tu_clave_secreta
+ALGORITHM        = HS256
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440
+FRONTEND_URL     = *
+RESEND_API_KEY   = re_xxxxxxxxxxxx
+```
+
+### Instalación local (desarrollo)
 
 ```bash
 cd backend
-```
-
-2. Crea y activa el entorno virtual:
-
-```bash
 python -m venv venv
 venv\Scripts\activate
-```
-
-3. Instala dependencias:
-
-```bash
 pip install -r requirements.txt
 ```
 
-4. Crea el archivo `.env` dentro de `backend/`:
+Crear `.env` en `backend/`:
 
 ```
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=qr_system
-DB_USER=postgres
-DB_PASSWORD=TU_PASSWORD
-
-SECRET_KEY=tu_clave_secreta_aqui
+DATABASE_URL=postgresql://...neon.tech/neondb?sslmode=require
+SECRET_KEY=tu_clave_secreta
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
-
-API_HOST=0.0.0.0
-API_PORT=8000
-
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=*
+RESEND_API_KEY=re_xxxxxxxxxxxx
 ```
 
-5. Corre el servidor:
+Correr servidor:
 
 ```bash
-py -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Backend disponible en `http://localhost:8000`
-Documentación en `http://localhost:8000/docs`
+### Machine Learning
 
-##  Flutter
+Generar datos de prueba (primera vez):
 
-1. Entra a la carpeta flutter_app:
+```bash
+DATABASE_URL="tu_url" python generar_datos.py
+```
+
+Ejecutar modelos ML:
+
+```bash
+DATABASE_URL="tu_url" python ml_service.py
+```
+
+---
+
+## Flutter
+
+### Configuración
+
+Editar `lib/constants/api_constants.dart`:
+
+```dart
+// Producción (Railway)
+static const String baseUrl = 'https://tu-app.up.railway.app';
+
+// Desarrollo local
+// static const String baseUrl = 'http://TU_IP:8000';
+```
+
+### Correr en desarrollo
 
 ```bash
 cd flutter_app
-```
-
-2. Instala dependencias:
-
-```bash
 flutter pub get
-```
-
-3. Configura la IP en `lib/constants/api_constants.dart`:
-
-```dart
-static const String baseUrl = 'http://TU_IP:8000';
-```
-
-> Reemplaza `TU_IP` con la IP de tu PC. Ejecuta `ipconfig` en Windows para verla. El celular y la PC deben estar en la misma red WiFi.
-
-4. Conecta el celular por USB con depuración USB activada y corre:
-
-```bash
 flutter run
-```
 
-##  Roles
+```
+## Roles
 
 | Rol | Acceso |
 |-----|--------|
-| `usuario` | Registrar objetos, ver QRs, ver historial propio |
-| `admin` | Ver todos los escaneos, filtrar por fecha y alumno |
+| `usuario` | Registrar objetos, ver QRs, ver historial propio, cambiar contraseña |
+| `admin` | Todo lo anterior + ver todos los escaneos, ver alumnos, análisis ML |
 
-##  Crear usuario admin
 
-```sql
-UPDATE cuentas SET rol = 'admin' WHERE correo = 'tu_correo@ejemplo.com';
-```
+## Endpoints
 
-##  Endpoints
-
+### Autenticación
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | POST | `/auth/login` | Iniciar sesión |
 | POST | `/auth/registro` | Registrar usuario |
+| GET | `/auth/perfil` | Obtener perfil |
+| PUT | `/auth/perfil` | Actualizar perfil |
+| POST | `/auth/cambiar-contrasena` | Cambiar contraseña |
+| POST | `/auth/solicitar-reset` | Solicitar código de reset |
+| POST | `/auth/verificar-codigo` | Verificar código de reset |
+| POST | `/auth/restablecer-contrasena` | Restablecer contraseña |
+
+### Objetos
+| Método | Ruta | Descripción |
+|--------|------|-------------|
 | GET | `/objetos/mis-objetos` | Objetos del usuario |
 | POST | `/objetos/` | Crear objeto con QR |
+| GET | `/objetos/{id}` | Detalle de objeto |
+
+### Escaneos
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/escaneos/{qr_code}` | Registrar escaneo (ESP32) |
 | GET | `/escaneos/mi-historial` | Historial del usuario |
 | GET | `/escaneos/` | Todos los escaneos (admin) |
-| POST | `/escaneos/{qr_code}` | Registrar escaneo (ESP32) |
 
+### Machine Learning
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/ml/perfiles` | Clasificación de alumnos (KMeans) |
+| GET | `/ml/anomalias` | Escaneos sospechosos (Isolation Forest) |
+| GET | `/ml/resumen` | Resumen general ML |
+
+### Estadísticas
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/stats/` | Estadísticas generales |
+
+---
+
+## Hardware (ESP32 + GM65)
+
+El ESP32 con lector QR GM65 escanea el código y hace un POST al backend:
+
+```
+POST https://tu-app.up.railway.app/escaneos/{qr_code}
+Content-Type: application/json
+
+{
+  "ubicacion": "Entrada principal",
+  "dispositivo": "ESP32"
+}
+```
+
+El sistema alterna automáticamente entre ENTRADA y SALIDA según el último evento registrado.
+
+---
