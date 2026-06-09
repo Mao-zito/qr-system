@@ -1,8 +1,9 @@
 import os
 import random
-import resend
 import string
 from datetime import datetime, timedelta
+
+import resend
 
 from app.database import Database
 
@@ -18,7 +19,7 @@ def _enviar_email(destinatario: str, codigo: str) -> bool:
 
     resend.api_key = api_key
 
-    resend.Emails.send({
+    params: resend.Emails.SendParams = {
         "from": "QR System <onboarding@resend.dev>",
         "to": [destinatario],
         "subject": "Código para restablecer tu contraseña — QR System",
@@ -45,7 +46,8 @@ def _enviar_email(destinatario: str, codigo: str) -> bool:
           </p>
         </div>
         """,
-    })
+    }
+    resend.Emails.send(params)
     return True
 
 
